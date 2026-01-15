@@ -1,48 +1,59 @@
-const CACHE_NAME = 'pharmacy-monitor-v1';
+// Service Worker for Pharmacy Monitor PWA
+const CACHE_NAME = 'pharmacy-monitor-v3';
 const urlsToCache = [
     '/',
     '/index.html',
     '/manifest.json',
-    'https://cdn.jsdelivr.net/npm/chart.js',
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+    '/icon-192.png',
+    '/icon-512.png'
 ];
 
 // Install
 self.addEventListener('install', event => {
+    console.log('[SW] Installing...');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(urlsToCache))
+            .then(() => self.skipWaiting())
     );
 });
 
-// Fetch
+// Activate
+self.addEventListener('activate', event => {
+    console.log('[SW] Activating...');
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+// Fetch - Network first, fallback to cache
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                if (response) return response;
-                return fetch(event.request);
-            })
-    );
-});
-
-// Push notification
-self.addEventListener('push', event => {
-    const data = event.data?.json() || {};
-    const title = data.title || 'Pharmacy Alert';
-    const options = {
-        body: data.body || 'Temperature alert!',
-        icon: 'icon-192.png',
-        badge: 'icon-192.png',
-        vibrate: [200, 100, 200],
-        data: { url: '/' }
-    };
+    // Skip OneSignal requests
+    if (event.request.url.includes('onesignal.com')) {
+        return;
+    }
     
-    event.waitUntil(self.registration.showNotification(title, options));
-});
-
-// Notification click
-self.addEventListener('notificationclick', event => {
-    event.notification.close();
-    event.waitUntil(clients.openWindow('/'));
+    event.respondWith(
+        fetch(event.request)
+            .then(response => {
+                if (response && response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        if (event.request.method === 'GET') {
+                            cache.put(event.request, responseClone);
+                        }
+                    });
+                }
+                return response;
+            })
+            .catch(() => caches.match(event.request))
+    );
 });
