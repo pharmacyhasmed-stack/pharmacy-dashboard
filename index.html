@@ -16,6 +16,9 @@
     
     <title>Pharmacy Temperature Monitor</title>
     
+    <!-- OneSignal SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
@@ -302,12 +305,61 @@
             color: white;
         }
         
+        .btn-success {
+            background: #00d9a5;
+            color: white;
+        }
+        
         /* Main */
         .main {
             padding: 15px;
             max-width: 1200px;
             margin: 0 auto;
             padding-bottom: 100px;
+        }
+        
+        /* Notification Status Bar */
+        .notif-status-bar {
+            background: linear-gradient(135deg, #1a1a2e, #12121a);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 1px solid #2a2a4a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .notif-status-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .notif-status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: #2a2a4a;
+        }
+        
+        .notif-status-icon.granted { background: rgba(0, 217, 165, 0.2); }
+        .notif-status-icon.denied { background: rgba(233, 69, 96, 0.2); }
+        .notif-status-icon.pending { background: rgba(255, 209, 102, 0.2); }
+        
+        .notif-status-text strong { display: block; margin-bottom: 2px; }
+        .notif-status-text span { font-size: 0.85rem; color: #a0a0b0; }
+        
+        .notif-status-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
         /* Cards */
@@ -363,12 +415,14 @@
             background: linear-gradient(135deg, #00d9a5, #4cc9f0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .temp-value.alert {
             background: linear-gradient(135deg, #e94560, #ffd166);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .temp-range {
@@ -530,10 +584,9 @@
             background: #e94560;
             border-radius: 50%;
             font-size: 0.7rem;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
-            display: none;
         }
         
         .notification-badge.show { display: flex; }
@@ -736,6 +789,8 @@
             .stat-card { padding: 10px 5px; }
             .stat-label { font-size: 0.6rem; }
             .stat-value { font-size: 1rem; }
+            .notif-status-bar { flex-direction: column; text-align: center; }
+            .notif-status-buttons { justify-content: center; }
         }
     </style>
 </head>
@@ -752,8 +807,8 @@
     <!-- Install Banner -->
     <div class="install-banner" id="installBanner">
         <div class="install-banner-text">
-            <strong>Install App</strong>
-            <small>Add to home screen for the best experience</small>
+            <strong>📱 Install App</strong>
+            <small>Add to home screen for notifications</small>
         </div>
         <button class="install-btn" onclick="installApp()">Install</button>
         <button class="install-close" onclick="hideInstallBanner()">×</button>
@@ -782,9 +837,13 @@
                 <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
             </form>
             
-            <div class="login-divider"><span>or</span></div>
+            <div class="login-divider"><span>or use demo</span></div>
             
-            <div class="login-switch" id="signupSwitch">
+            <button type="button" class="login-btn" style="background:#2a2a4a;" onclick="demoLogin()">
+                🚀 Demo Login (No Account Needed)
+            </button>
+            
+            <div class="login-switch" id="signupSwitch" style="margin-top:20px;">
                 Don't have an account? <a href="#" onclick="showSignup()">Sign Up</a>
             </div>
             <div class="login-switch" id="loginSwitch" style="display: none;">
@@ -800,7 +859,10 @@
     <div class="notification-panel" id="notificationPanel">
         <div class="notification-panel-header">
             <h2>🔔 Notifications</h2>
-            <button class="btn btn-secondary" onclick="closeNotifications()">✕</button>
+            <div>
+                <button class="btn btn-secondary" onclick="clearNotifications()" style="margin-right:5px;">Clear</button>
+                <button class="btn btn-secondary" onclick="closeNotifications()">✕</button>
+            </div>
         </div>
         <div class="notification-list" id="notificationList">
             <p style="text-align: center; color: #a0a0b0; padding: 40px;">No notifications yet</p>
@@ -834,8 +896,11 @@
                         <strong id="userName">User</strong>
                         <small id="userEmail">user@email.com</small>
                     </div>
-                    <div class="user-dropdown-item" onclick="enableNotifications()">
+                    <div class="user-dropdown-item" onclick="promptPushNotifications()">
                         🔔 Enable Notifications
+                    </div>
+                    <div class="user-dropdown-item" onclick="sendTestPush()">
+                        🧪 Test Push Notification
                     </div>
                     <div class="user-dropdown-item" onclick="downloadCSV()">
                         📥 Export Data
@@ -853,6 +918,26 @@
 
     <!-- Main Content -->
     <main class="main" id="mainContent" style="display: none;">
+        
+        <!-- Notification Status Bar -->
+        <div class="notif-status-bar" id="notifStatusBar">
+            <div class="notif-status-info">
+                <div class="notif-status-icon pending" id="notifIcon">🔔</div>
+                <div class="notif-status-text">
+                    <strong>Push Notifications</strong>
+                    <span id="notifStatusText">Checking status...</span>
+                </div>
+            </div>
+            <div class="notif-status-buttons">
+                <button class="btn btn-primary" onclick="promptPushNotifications()" id="enableNotifBtn">
+                    Enable Notifications
+                </button>
+                <button class="btn btn-secondary" onclick="sendTestPush()">
+                    🧪 Test
+                </button>
+            </div>
+        </div>
+        
         <!-- Temperature Cards -->
         <div class="temp-grid">
             <div class="card" id="ambientCard">
@@ -904,7 +989,7 @@
         <!-- Chart -->
         <div class="chart-section">
             <div class="chart-header">
-                <h2 class="chart-title">📊 History</h2>
+                <h2 class="chart-title">📊 Temperature History</h2>
                 <div class="chart-tabs">
                     <button class="chart-tab active" onclick="loadChart('daily', this)">Day</button>
                     <button class="chart-tab" onclick="loadChart('weekly', this)">Week</button>
@@ -917,7 +1002,7 @@
         <!-- Recent Readings -->
         <div class="table-section">
             <div class="chart-header">
-                <h2 class="chart-title">📋 Recent</h2>
+                <h2 class="chart-title">📋 Recent Readings</h2>
             </div>
             <table>
                 <thead><tr><th>Time</th><th>Ambient</th><th>Fridge</th><th>Status</th></tr></thead>
@@ -927,7 +1012,7 @@
     </main>
 
     <footer class="footer" id="mainFooter" style="display: none;">
-        <p>Pharmacy Temperature Monitor</p>
+        <p>Pharmacy Temperature Monitor • Push Notifications by OneSignal</p>
     </footer>
 
     <script>
@@ -936,6 +1021,9 @@
         // ============================================
         const SUPABASE_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
+        
+        // OneSignal Configuration
+        const ONESIGNAL_APP_ID = 'f4eadf19-be57-49f3-aa0e-907502675358';
 
         const AMBIENT_MIN = 15, AMBIENT_MAX = 25;
         const FREEZER_MIN = 2, FREEZER_MAX = 8;
@@ -946,6 +1034,164 @@
         let notifications = [];
         let deferredPrompt = null;
         let isSignupMode = false;
+        let oneSignalInitialized = false;
+
+        // ============================================
+        // ONESIGNAL INITIALIZATION
+        // ============================================
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        
+        function initOneSignal() {
+            OneSignalDeferred.push(async function(OneSignal) {
+                try {
+                    await OneSignal.init({
+                        appId: ONESIGNAL_APP_ID,
+                        allowLocalhostAsSecureOrigin: true,
+                        serviceWorkerParam: { scope: '/' },
+                        serviceWorkerPath: 'OneSignalSDKWorker.js',
+                        notifyButton: {
+                            enable: false
+                        },
+                        welcomeNotification: {
+                            title: "Pharmacy Monitor",
+                            message: "You'll now receive temperature alerts!"
+                        }
+                    });
+                    
+                    oneSignalInitialized = true;
+                    console.log('✅ OneSignal initialized');
+                    
+                    // Check subscription status
+                    updatePushStatus();
+                    
+                    // Listen for subscription changes
+                    OneSignal.Notifications.addEventListener('permissionChange', (permission) => {
+                        console.log('Permission changed:', permission);
+                        updatePushStatus();
+                    });
+                    
+                } catch (error) {
+                    console.error('❌ OneSignal init error:', error);
+                }
+            });
+        }
+
+        async function updatePushStatus() {
+            const icon = document.getElementById('notifIcon');
+            const text = document.getElementById('notifStatusText');
+            const btn = document.getElementById('enableNotifBtn');
+            
+            if (!icon || !text || !btn) return;
+            
+            try {
+                const permission = await OneSignal.Notifications.permission;
+                const subscribed = await OneSignal.User.PushSubscription.optedIn;
+                
+                console.log('Push status - Permission:', permission, 'Subscribed:', subscribed);
+                
+                if (permission && subscribed) {
+                    icon.className = 'notif-status-icon granted';
+                    icon.textContent = '✅';
+                    text.textContent = 'Enabled - You will receive alerts';
+                    text.style.color = '#00d9a5';
+                    btn.textContent = '✓ Enabled';
+                    btn.disabled = true;
+                    btn.style.opacity = '0.7';
+                } else if (permission === false) {
+                    icon.className = 'notif-status-icon denied';
+                    icon.textContent = '🚫';
+                    text.textContent = 'Blocked - Check browser settings';
+                    text.style.color = '#e94560';
+                    btn.textContent = 'Blocked';
+                    btn.disabled = true;
+                } else {
+                    icon.className = 'notif-status-icon pending';
+                    icon.textContent = '🔔';
+                    text.textContent = 'Click to enable push notifications';
+                    text.style.color = '#ffd166';
+                    btn.textContent = 'Enable Notifications';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            } catch (error) {
+                console.error('Error checking push status:', error);
+                text.textContent = 'Status unknown';
+            }
+        }
+
+        async function promptPushNotifications() {
+            console.log('🔔 Requesting push permission...');
+            
+            try {
+                // Request permission through OneSignal
+                await OneSignal.Notifications.requestPermission();
+                
+                // Opt in the user
+                await OneSignal.User.PushSubscription.optIn();
+                
+                showToast('Push notifications enabled! 🎉', 'success');
+                updatePushStatus();
+                
+                // Get player ID for server-side notifications
+                const playerId = await OneSignal.User.PushSubscription.id;
+                console.log('OneSignal Player ID:', playerId);
+                
+                // Store player ID in user metadata if logged in
+                if (currentUser && playerId) {
+                    await storePlayerId(playerId);
+                }
+                
+            } catch (error) {
+                console.error('Error enabling push:', error);
+                showToast('Could not enable notifications', 'error');
+            }
+        }
+
+        async function storePlayerId(playerId) {
+            // Store in localStorage for now
+            localStorage.setItem('oneSignalPlayerId', playerId);
+            
+            // Optionally store in Supabase user metadata
+            if (currentUser && currentUser.id) {
+                try {
+                    await sb.from('user_push_tokens').upsert({
+                        user_id: currentUser.id,
+                        player_id: playerId,
+                        updated_at: new Date().toISOString()
+                    });
+                    console.log('Player ID stored in database');
+                } catch (e) {
+                    console.log('Could not store player ID in database (table may not exist)');
+                }
+            }
+        }
+
+        async function sendTestPush() {
+            console.log('🧪 Sending test push...');
+            
+            try {
+                const subscribed = await OneSignal.User.PushSubscription.optedIn;
+                
+                if (!subscribed) {
+                    showToast('Enable notifications first!', 'warning');
+                    promptPushNotifications();
+                    return;
+                }
+                
+                // Send via OneSignal Tags (triggers server-side)
+                await OneSignal.User.addTag('test_notification', Date.now().toString());
+                
+                // Also show a local notification
+                showToast('Test notification sent!', 'success');
+                
+                // Add to in-app notifications
+                addNotification('🧪 Test Notification', 'Push notifications are working!', 'success');
+                
+            } catch (error) {
+                console.error('Test push error:', error);
+                showToast('Error sending test', 'error');
+            }
+        }
 
         // ============================================
         // PWA INSTALL
@@ -955,15 +1201,18 @@
             deferredPrompt = e;
             setTimeout(() => {
                 document.getElementById('installBanner').classList.add('show');
-            }, 3000);
+            }, 2000);
         });
 
         async function installApp() {
-            if (!deferredPrompt) return;
+            if (!deferredPrompt) {
+                showToast('App already installed or not available', 'info');
+                return;
+            }
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-                showToast('App installed!', 'success');
+                showToast('App installed! 🎉', 'success');
             }
             deferredPrompt = null;
             hideInstallBanner();
@@ -974,41 +1223,20 @@
         }
 
         // ============================================
-        // SERVICE WORKER & PUSH NOTIFICATIONS
+        // SERVICE WORKER
         // ============================================
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => {
-                console.log('Service Worker registered');
-            }).catch(err => {
-                console.log('SW registration failed:', err);
-            });
-        }
-
-        async function enableNotifications() {
-            if (!('Notification' in window)) {
-                showToast('Notifications not supported', 'error');
-                return;
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const reg = await navigator.serviceWorker.register('sw.js');
+                    console.log('✅ SW registered');
+                    return reg;
+                } catch (error) {
+                    console.error('❌ SW registration failed:', error);
+                    return null;
+                }
             }
-
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                showToast('Notifications enabled!', 'success');
-                // Subscribe to push notifications
-                subscribeToAlerts();
-            } else {
-                showToast('Notifications denied', 'warning');
-            }
-        }
-
-        function showBrowserNotification(title, body) {
-            if (Notification.permission === 'granted') {
-                new Notification(title, {
-                    body: body,
-                    icon: 'icon-192.png',
-                    badge: 'icon-192.png',
-                    vibrate: [200, 100, 200]
-                });
-            }
+            return null;
         }
 
         // ============================================
@@ -1028,6 +1256,12 @@
             document.getElementById('loginSwitch').style.display = 'none';
         }
 
+        function demoLogin() {
+            currentUser = { email: 'demo@pharmacy.com', id: 'demo' };
+            showDashboard();
+            showToast('Welcome! Demo mode active', 'success');
+        }
+
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
@@ -1036,7 +1270,7 @@
             const errorEl = document.getElementById('loginError');
 
             btn.disabled = true;
-            btn.textContent = isSignupMode ? 'Creating account...' : 'Signing in...';
+            btn.textContent = isSignupMode ? 'Creating...' : 'Signing in...';
             errorEl.classList.remove('show');
 
             try {
@@ -1044,7 +1278,7 @@
                 if (isSignupMode) {
                     result = await sb.auth.signUp({ email, password });
                     if (result.error) throw result.error;
-                    showToast('Account created! Please check your email to verify.', 'success');
+                    showToast('Account created! Check email to verify.', 'success');
                     showLogin();
                 } else {
                     result = await sb.auth.signInWithPassword({ email, password });
@@ -1088,6 +1322,17 @@
             }
 
             loadData();
+            updatePushStatus();
+            
+            // Prompt for notifications after delay
+            setTimeout(() => {
+                OneSignalDeferred.push(async function(OneSignal) {
+                    const subscribed = await OneSignal.User.PushSubscription.optedIn;
+                    if (!subscribed) {
+                        showToast('Enable push notifications for alerts!', 'info');
+                    }
+                });
+            }, 3000);
         }
 
         // ============================================
@@ -1103,9 +1348,10 @@
                 setupRealtime();
 
                 document.getElementById('statusDot').classList.add('connected');
-                document.getElementById('statusText').textContent = 'Connected';
+                document.getElementById('statusText').textContent = 'Live';
             } catch (error) {
-                showToast('Error loading data: ' + error.message, 'error');
+                console.error('Load error:', error);
+                showToast('Error: ' + error.message, 'error');
             }
         }
 
@@ -1117,36 +1363,45 @@
                 .limit(1)
                 .single();
 
-            if (!error && data) updateTemperatureDisplay(data);
+            if (!error && data) {
+                updateTemperatureDisplay(data, false);
+            }
         }
 
-        function updateTemperatureDisplay(r) {
+        function updateTemperatureDisplay(r, checkAlerts = true) {
             const ambient = parseFloat(r.ambient_temp);
             const freezer = parseFloat(r.freezer_temp);
 
             const ambientAlert = ambient < AMBIENT_MIN || ambient > AMBIENT_MAX;
             const freezerAlert = freezer < FREEZER_MIN || freezer > FREEZER_MAX;
 
+            // Update ambient display
             document.getElementById('ambientTemp').textContent = ambient.toFixed(1) + '°C';
             document.getElementById('ambientTemp').className = 'temp-value ' + (ambientAlert ? 'alert' : 'normal');
             document.getElementById('ambientCard').classList.toggle('alert', ambientAlert);
             document.getElementById('ambientBar').classList.toggle('alert', ambientAlert);
             document.getElementById('ambientBar').style.width = Math.max(0, Math.min(100, ((ambient - AMBIENT_MIN) / (AMBIENT_MAX - AMBIENT_MIN)) * 100)) + '%';
 
+            // Update freezer display
             document.getElementById('freezerTemp').textContent = freezer.toFixed(1) + '°C';
             document.getElementById('freezerTemp').className = 'temp-value ' + (freezerAlert ? 'alert' : 'normal');
             document.getElementById('freezerCard').classList.toggle('alert', freezerAlert);
             document.getElementById('freezerBar').classList.toggle('alert', freezerAlert);
             document.getElementById('freezerBar').style.width = Math.max(0, Math.min(100, ((freezer - FREEZER_MIN) / (FREEZER_MAX - FREEZER_MIN)) * 100)) + '%';
 
+            // Update status
             document.getElementById('lastUpdate').textContent = new Date(r.timestamp).toLocaleTimeString();
             document.getElementById('wifiSignal').textContent = (r.wifi_rssi ?? '--') + ' dBm';
 
-            // Check for alerts and show notification
-            if (ambientAlert || freezerAlert) {
-                const alertMsg = `${ambientAlert ? 'Ambient: ' + ambient.toFixed(1) + '°C ' : ''}${freezerAlert ? 'Fridge: ' + freezer.toFixed(1) + '°C' : ''}`;
-                addNotification('Temperature Alert!', alertMsg, 'alert');
-                showBrowserNotification('🚨 Temperature Alert!', alertMsg);
+            // Check for alerts (only for new readings)
+            if (checkAlerts && (ambientAlert || freezerAlert)) {
+                const alertMessages = [];
+                if (ambientAlert) alertMessages.push(`Ambient: ${ambient.toFixed(1)}°C`);
+                if (freezerAlert) alertMessages.push(`Fridge: ${freezer.toFixed(1)}°C`);
+                
+                const alertMsg = alertMessages.join(' | ');
+                addNotification('🚨 Temperature Alert!', alertMsg, 'alert');
+                showToast('⚠️ ' + alertMsg, 'error');
             }
         }
 
@@ -1193,7 +1448,7 @@
             const tbody = document.getElementById('readingsTable');
 
             if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#a0a0b0;">No data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#a0a0b0;">No readings yet</td></tr>';
                 return;
             }
 
@@ -1214,226 +1469,12 @@
         // ============================================
         function initializeChart() {
             const ctx = document.getElementById('tempChart').getContext('2d');
+            if (tempChart) tempChart.destroy();
+            
             tempChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: [],
                     datasets: [
                         { label: 'Ambient', data: [], borderColor: '#4cc9f0', backgroundColor: 'rgba(76,201,240,0.1)', fill: true, tension: 0.4, pointRadius: 2 },
-                        { label: 'Fridge', data: [], borderColor: '#4361ee', backgroundColor: 'rgba(67,97,238,0.1)', fill: true, tension: 0.4, pointRadius: 2 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#a0a0b0', boxWidth: 12, font: { size: 10 } } } },
-                    scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0a0b0', font: { size: 9 } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0a0b0', font: { size: 9 } } }
-                    }
-                }
-            });
-        }
-
-        async function loadChart(period, btn) {
-            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-
-            const now = new Date();
-            const startDate = period === 'daily' ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) :
-                period === 'weekly' ? new Date(now - 7 * 24 * 60 * 60 * 1000) : new Date(now - 30 * 24 * 60 * 60 * 1000);
-
-            const { data } = await sb.from('temperature_readings').select('timestamp, ambient_temp, freezer_temp')
-                .gte('timestamp', startDate.toISOString()).order('timestamp', { ascending: true });
-
-            if (!data || data.length === 0) return;
-
-            const chartData = data.length > 100 ? data.filter((_, i) => i % Math.ceil(data.length / 100) === 0) : data;
-
-            tempChart.data.labels = chartData.map(r => {
-                const d = new Date(r.timestamp);
-                return period === 'daily' ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) :
-                    period === 'weekly' ? d.toLocaleDateString([], { weekday: 'short' }) :
-                        d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-            });
-
-            tempChart.data.datasets[0].data = chartData.map(r => parseFloat(r.ambient_temp));
-            tempChart.data.datasets[1].data = chartData.map(r => parseFloat(r.freezer_temp));
-            tempChart.update();
-        }
-
-        // ============================================
-        // REALTIME
-        // ============================================
-        function setupRealtime() {
-            sb.channel('readings')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'temperature_readings' }, (payload) => {
-                    updateTemperatureDisplay(payload.new);
-                    loadRecentReadings();
-                    loadStatistics();
-                })
-                .subscribe();
-        }
-
-        function subscribeToAlerts() {
-            sb.channel('alerts')
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'temperature_readings',
-                    filter: 'ambient_alert=eq.true'
-                }, (payload) => {
-                    showBrowserNotification('🚨 Ambient Alert!', `Temperature: ${payload.new.ambient_temp}°C`);
-                })
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'temperature_readings',
-                    filter: 'freezer_alert=eq.true'
-                }, (payload) => {
-                    showBrowserNotification('🚨 Fridge Alert!', `Temperature: ${payload.new.freezer_temp}°C`);
-                })
-                .subscribe();
-        }
-
-        // ============================================
-        // NOTIFICATIONS UI
-        // ============================================
-        function addNotification(title, body, type = 'info') {
-            notifications.unshift({
-                title,
-                body,
-                type,
-                time: new Date()
-            });
-
-            updateNotificationBadge();
-            renderNotifications();
-        }
-
-        function updateNotificationBadge() {
-            const badge = document.getElementById('notificationBadge');
-            const count = notifications.length;
-            badge.textContent = count > 9 ? '9+' : count;
-            badge.classList.toggle('show', count > 0);
-        }
-
-        function renderNotifications() {
-            const list = document.getElementById('notificationList');
-            if (notifications.length === 0) {
-                list.innerHTML = '<p style="text-align:center;color:#a0a0b0;padding:40px;">No notifications</p>';
-                return;
-            }
-
-            list.innerHTML = notifications.map(n => `
-                <div class="notification-item ${n.type}">
-                    <div class="notification-item-header">
-                        <span class="notification-item-title">${n.title}</span>
-                        <span class="notification-item-time">${n.time.toLocaleTimeString()}</span>
-                    </div>
-                    <div class="notification-item-body">${n.body}</div>
-                </div>
-            `).join('');
-        }
-
-        function openNotifications() {
-            document.getElementById('notificationPanel').classList.add('open');
-            document.getElementById('notificationOverlay').classList.add('show');
-        }
-
-        function closeNotifications() {
-            document.getElementById('notificationPanel').classList.remove('open');
-            document.getElementById('notificationOverlay').classList.remove('show');
-        }
-
-        // ============================================
-        // USER MENU
-        // ============================================
-        function toggleUserMenu(forceClose = false) {
-            const dropdown = document.getElementById('userDropdown');
-            if (forceClose) {
-                dropdown.classList.remove('show');
-            } else {
-                dropdown.classList.toggle('show');
-            }
-        }
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-menu')) {
-                document.getElementById('userDropdown').classList.remove('show');
-            }
-        });
-
-        // ============================================
-        // CSV DOWNLOAD
-        // ============================================
-        async function downloadCSV() {
-            showToast('Preparing download...', 'info');
-            const { data } = await sb.from('temperature_readings').select('*').order('timestamp', { ascending: false });
-
-            if (!data || data.length === 0) {
-                showToast('No data', 'warning');
-                return;
-            }
-
-            const csv = ['Timestamp,Ambient,Fridge,Ambient_Alert,Fridge_Alert,WiFi',
-                ...data.map(r => `${r.timestamp},${r.ambient_temp},${r.freezer_temp},${r.ambient_alert},${r.freezer_alert},${r.wifi_rssi || ''}`)
-            ].join('\n');
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `pharmacy_data_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-            showToast(`Downloaded ${data.length} records`, 'success');
-        }
-
-        async function refreshData() {
-            showToast('Refreshing...', 'info');
-            await loadCurrentReading();
-            await loadStatistics();
-            await loadRecentReadings();
-            await loadChart('daily');
-            showToast('Refreshed', 'success');
-        }
-
-        // ============================================
-        // TOAST
-        // ============================================
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icons = { success: '✓', error: '✗', warning: '⚠', info: 'ℹ' };
-            toast.innerHTML = `<span>${icons[type] || 'ℹ'}</span><span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        // ============================================
-        // INIT
-        // ============================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-            // Check existing session
-            const { data: { session } } = await sb.auth.getSession();
-
-            if (session) {
-                currentUser = session.user;
-                showDashboard();
-            }
-
-            document.getElementById('loadingOverlay').classList.add('hidden');
-
-            // Auto-refresh
-            setInterval(async () => {
-                if (currentUser) {
-                    await loadCurrentReading();
-                    await loadStatistics();
-                }
-            }, 30000);
-        });
-    </script>
-</body>
-</html>
+                        { label: 'Fridge', data: [], borderColor: '#4361ee', backgroundColor: 'rgba(67,97,238,0.1)', fill
