@@ -1,7 +1,7 @@
 {
     "name": "Pharmacy Temperature Monitor",
     "short_name": "Pharmacy Monitor",
-    "description": "Real-time temperature monitoring for pharmacy",
+    "description": "Real-time temperature monitoring with push notifications",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#0a0a0f",
