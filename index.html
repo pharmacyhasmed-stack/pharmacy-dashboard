@@ -8,10 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Pharmacy Monitor">
     
-    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    
-    <!-- Icons for iOS -->
     <link rel="apple-touch-icon" href="icon-192.png">
     
     <title>Pharmacy Temperature Monitor</title>
@@ -30,10 +27,8 @@
             background: #0a0a0f;
             color: #fff;
             min-height: 100vh;
-            -webkit-tap-highlight-color: transparent;
         }
         
-        /* Install Banner */
         .install-banner {
             display: none;
             position: fixed;
@@ -43,16 +38,9 @@
             background: linear-gradient(135deg, #4361ee, #4cc9f0);
             padding: 15px 20px;
             z-index: 5000;
-            animation: slideUp 0.3s ease;
         }
         
         .install-banner.show { display: flex; align-items: center; justify-content: space-between; }
-        
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        
         .install-banner-text { flex: 1; }
         .install-banner-text strong { display: block; margin-bottom: 3px; }
         .install-banner-text small { opacity: 0.9; }
@@ -74,19 +62,13 @@
             font-size: 24px;
             margin-left: 15px;
             cursor: pointer;
-            opacity: 0.8;
         }
         
-        /* Login Screen */
         .login-screen {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: #0a0a0f;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 4000;
@@ -104,10 +86,7 @@
             border: 1px solid #2a2a4a;
         }
         
-        .login-logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        .login-logo { text-align: center; margin-bottom: 30px; }
         
         .login-logo-icon {
             width: 80px;
@@ -135,13 +114,9 @@
             border-radius: 10px;
             color: white;
             font-size: 1rem;
-            transition: border-color 0.3s;
         }
         
-        .form-input:focus {
-            outline: none;
-            border-color: #4361ee;
-        }
+        .form-input:focus { outline: none; border-color: #4361ee; }
         
         .login-btn {
             width: 100%;
@@ -153,19 +128,9 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
         }
         
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(67, 97, 238, 0.4);
-        }
-        
-        .login-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
         
         .login-divider {
             display: flex;
@@ -174,8 +139,7 @@
             color: #a0a0b0;
         }
         
-        .login-divider::before,
-        .login-divider::after {
+        .login-divider::before, .login-divider::after {
             content: '';
             flex: 1;
             height: 1px;
@@ -184,19 +148,6 @@
         
         .login-divider span { padding: 0 15px; font-size: 0.85rem; }
         
-        .login-switch {
-            text-align: center;
-            margin-top: 20px;
-            color: #a0a0b0;
-            font-size: 0.9rem;
-        }
-        
-        .login-switch a {
-            color: #4cc9f0;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
         .login-error {
             background: rgba(233, 69, 96, 0.1);
             border: 1px solid #e94560;
@@ -204,13 +155,11 @@
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
-            font-size: 0.9rem;
             display: none;
         }
         
         .login-error.show { display: block; }
         
-        /* Header */
         .header {
             background: linear-gradient(135deg, #12121a, #1a1a2e);
             padding: 15px 20px;
@@ -277,7 +226,6 @@
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 500;
-            transition: all 0.2s;
         }
         
         .btn-icon {
@@ -290,27 +238,10 @@
             font-size: 1.1rem;
         }
         
-        .btn-primary {
-            background: linear-gradient(135deg, #4361ee, #4cc9f0);
-            color: white;
-        }
+        .btn-primary { background: linear-gradient(135deg, #4361ee, #4cc9f0); color: white; }
+        .btn-secondary { background: #2a2a4a; color: white; }
+        .btn-danger { background: #e94560; color: white; }
         
-        .btn-secondary {
-            background: #2a2a4a;
-            color: white;
-        }
-        
-        .btn-danger {
-            background: #e94560;
-            color: white;
-        }
-        
-        .btn-success {
-            background: #00d9a5;
-            color: white;
-        }
-        
-        /* Main */
         .main {
             padding: 15px;
             max-width: 1200px;
@@ -318,9 +249,8 @@
             padding-bottom: 100px;
         }
         
-        /* Notification Status Bar */
-        .notif-status-bar {
-            background: linear-gradient(135deg, #1a1a2e, #12121a);
+        .notif-bar {
+            background: #1a1a2e;
             border-radius: 12px;
             padding: 15px 20px;
             margin-bottom: 20px;
@@ -332,13 +262,9 @@
             gap: 15px;
         }
         
-        .notif-status-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .notif-bar-info { display: flex; align-items: center; gap: 12px; }
         
-        .notif-status-icon {
+        .notif-bar-icon {
             width: 40px;
             height: 40px;
             border-radius: 10px;
@@ -349,20 +275,14 @@
             background: #2a2a4a;
         }
         
-        .notif-status-icon.granted { background: rgba(0, 217, 165, 0.2); }
-        .notif-status-icon.denied { background: rgba(233, 69, 96, 0.2); }
-        .notif-status-icon.pending { background: rgba(255, 209, 102, 0.2); }
+        .notif-bar-icon.enabled { background: rgba(0, 217, 165, 0.2); }
+        .notif-bar-icon.disabled { background: rgba(233, 69, 96, 0.2); }
         
-        .notif-status-text strong { display: block; margin-bottom: 2px; }
-        .notif-status-text span { font-size: 0.85rem; color: #a0a0b0; }
+        .notif-bar-text strong { display: block; margin-bottom: 2px; }
+        .notif-bar-text span { font-size: 0.85rem; color: #a0a0b0; }
         
-        .notif-status-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        .notif-bar-buttons { display: flex; gap: 10px; }
         
-        /* Cards */
         .temp-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -375,7 +295,6 @@
             border-radius: 16px;
             padding: 20px;
             border: 1px solid #2a2a4a;
-            transition: all 0.3s;
         }
         
         .card.alert {
@@ -399,7 +318,6 @@
             font-size: 0.85rem;
             color: #a0a0b0;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         
         .card-icon { font-size: 1.5rem; }
@@ -408,21 +326,19 @@
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 12px;
-            font-family: 'Courier New', monospace;
+            font-family: monospace;
         }
         
         .temp-value.normal {
             background: linear-gradient(135deg, #00d9a5, #4cc9f0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
         
         .temp-value.alert {
             background: linear-gradient(135deg, #e94560, #ffd166);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
         
         .temp-range {
@@ -444,13 +360,10 @@
         .range-fill {
             height: 100%;
             border-radius: 4px;
-            transition: width 0.5s;
             background: linear-gradient(90deg, #00d9a5, #4cc9f0);
         }
         
-        .range-fill.alert {
-            background: linear-gradient(90deg, #ffd166, #e94560);
-        }
+        .range-fill.alert { background: linear-gradient(90deg, #ffd166, #e94560); }
         
         .info-row {
             display: flex;
@@ -464,7 +377,6 @@
         .info-label { color: #a0a0b0; }
         .info-value { font-weight: 500; }
         
-        /* Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -489,7 +401,6 @@
         
         .stat-value { font-size: 1.2rem; font-weight: 600; }
         
-        /* Chart */
         .chart-section {
             background: #1a1a2e;
             border-radius: 16px;
@@ -525,17 +436,12 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.8rem;
-            transition: all 0.2s;
         }
         
-        .chart-tab.active {
-            background: #4361ee;
-            color: white;
-        }
+        .chart-tab.active { background: #4361ee; color: white; }
         
         .chart-container { height: 250px; }
         
-        /* Table */
         .table-section {
             background: #1a1a2e;
             border-radius: 16px;
@@ -570,98 +476,7 @@
         .badge.ok { background: rgba(0, 217, 165, 0.2); color: #00d9a5; }
         .badge.alert { background: rgba(233, 69, 96, 0.2); color: #e94560; }
         
-        /* Notification Bell */
-        .notification-bell {
-            position: relative;
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 18px;
-            height: 18px;
-            background: #e94560;
-            border-radius: 50%;
-            font-size: 0.7rem;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .notification-badge.show { display: flex; }
-        
-        /* Notification Panel */
-        .notification-panel {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 100%;
-            max-width: 400px;
-            height: 100%;
-            background: #1a1a2e;
-            z-index: 2000;
-            transition: right 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .notification-panel.open { right: 0; }
-        
-        .notification-panel-header {
-            padding: 20px;
-            border-bottom: 1px solid #2a2a4a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .notification-panel-header h2 { font-size: 1.2rem; }
-        
-        .notification-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        
-        .notification-item {
-            background: #12121a;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-left: 4px solid #4361ee;
-        }
-        
-        .notification-item.alert { border-left-color: #e94560; }
-        .notification-item.success { border-left-color: #00d9a5; }
-        
-        .notification-item-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        
-        .notification-item-title { font-weight: 600; font-size: 0.9rem; }
-        .notification-item-time { font-size: 0.75rem; color: #a0a0b0; }
-        .notification-item-body { font-size: 0.85rem; color: #a0a0b0; }
-        
-        .notification-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1999;
-            display: none;
-        }
-        
-        .notification-overlay.show { display: block; }
-        
-        /* User Menu */
-        .user-menu {
-            position: relative;
-        }
+        .user-menu { position: relative; }
         
         .user-avatar {
             width: 36px;
@@ -673,7 +488,6 @@
             justify-content: center;
             font-weight: 600;
             cursor: pointer;
-            font-size: 0.9rem;
         }
         
         .user-dropdown {
@@ -705,13 +519,11 @@
             align-items: center;
             gap: 10px;
             cursor: pointer;
-            transition: background 0.2s;
         }
         
         .user-dropdown-item:hover { background: #12121a; }
         .user-dropdown-item.danger { color: #e94560; }
         
-        /* Toast */
         .toast-container {
             position: fixed;
             top: 70px;
@@ -729,7 +541,6 @@
             align-items: center;
             gap: 10px;
             animation: slideIn 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
             max-width: 300px;
         }
         
@@ -743,13 +554,9 @@
             to { transform: translateX(0); }
         }
         
-        /* Loading */
         .loading-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: #0a0a0f;
             display: flex;
             flex-direction: column;
@@ -772,7 +579,6 @@
         
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Footer */
         .footer {
             text-align: center;
             padding: 20px;
@@ -780,41 +586,32 @@
             font-size: 0.8rem;
         }
         
-        /* Mobile optimizations */
         @media (max-width: 600px) {
             .header h1 { font-size: 1rem; }
             .temp-value { font-size: 2.5rem; }
             .chart-container { height: 200px; }
             .stats-grid { grid-template-columns: repeat(3, 1fr); }
-            .stat-card { padding: 10px 5px; }
-            .stat-label { font-size: 0.6rem; }
-            .stat-value { font-size: 1rem; }
-            .notif-status-bar { flex-direction: column; text-align: center; }
-            .notif-status-buttons { justify-content: center; }
+            .notif-bar { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <!-- Loading -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
-        <div class="loading-text">Loading...</div>
+        <div>Loading...</div>
     </div>
 
-    <!-- Toast -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Install Banner -->
     <div class="install-banner" id="installBanner">
         <div class="install-banner-text">
             <strong>📱 Install App</strong>
-            <small>Add to home screen for notifications</small>
+            <small>Get push notifications</small>
         </div>
         <button class="install-btn" onclick="installApp()">Install</button>
         <button class="install-close" onclick="hideInstallBanner()">×</button>
     </div>
 
-    <!-- Login Screen -->
     <div class="login-screen" id="loginScreen">
         <div class="login-box">
             <div class="login-logo">
@@ -825,7 +622,7 @@
             
             <div class="login-error" id="loginError"></div>
             
-            <form id="loginForm" onsubmit="handleLogin(event)">
+            <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label">Email</label>
                     <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" required>
@@ -837,45 +634,20 @@
                 <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
             </form>
             
-            <div class="login-divider"><span>or use demo</span></div>
+            <div class="login-divider"><span>or</span></div>
             
             <button type="button" class="login-btn" style="background:#2a2a4a;" onclick="demoLogin()">
-                🚀 Demo Login (No Account Needed)
+                🚀 Demo Login
             </button>
-            
-            <div class="login-switch" id="signupSwitch" style="margin-top:20px;">
-                Don't have an account? <a href="#" onclick="showSignup()">Sign Up</a>
-            </div>
-            <div class="login-switch" id="loginSwitch" style="display: none;">
-                Already have an account? <a href="#" onclick="showLogin()">Sign In</a>
-            </div>
         </div>
     </div>
 
-    <!-- Notification Overlay -->
-    <div class="notification-overlay" id="notificationOverlay" onclick="closeNotifications()"></div>
-
-    <!-- Notification Panel -->
-    <div class="notification-panel" id="notificationPanel">
-        <div class="notification-panel-header">
-            <h2>🔔 Notifications</h2>
-            <div>
-                <button class="btn btn-secondary" onclick="clearNotifications()" style="margin-right:5px;">Clear</button>
-                <button class="btn btn-secondary" onclick="closeNotifications()">✕</button>
-            </div>
-        </div>
-        <div class="notification-list" id="notificationList">
-            <p style="text-align: center; color: #a0a0b0; padding: 40px;">No notifications yet</p>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header class="header" id="mainHeader" style="display: none;">
+    <header class="header" id="mainHeader" style="display:none;">
         <div class="logo">
             <div class="logo-icon">🌡️</div>
             <div>
                 <h1>Pharmacy Monitor</h1>
-                <small id="userEmailDisplay">user@email.com</small>
+                <small id="userEmailDisplay"></small>
             </div>
         </div>
         <div class="header-right">
@@ -883,62 +655,38 @@
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">Connecting</span>
             </div>
-            
-            <button class="btn btn-secondary btn-icon notification-bell" onclick="openNotifications()">
-                🔔
-                <span class="notification-badge" id="notificationBadge">0</span>
-            </button>
-            
             <div class="user-menu">
                 <div class="user-avatar" id="userAvatar" onclick="toggleUserMenu()">U</div>
                 <div class="user-dropdown" id="userDropdown">
                     <div class="user-dropdown-header">
                         <strong id="userName">User</strong>
-                        <small id="userEmail">user@email.com</small>
+                        <small id="userEmail"></small>
                     </div>
-                    <div class="user-dropdown-item" onclick="promptPushNotifications()">
-                        🔔 Enable Notifications
-                    </div>
-                    <div class="user-dropdown-item" onclick="sendTestPush()">
-                        🧪 Test Push Notification
-                    </div>
-                    <div class="user-dropdown-item" onclick="downloadCSV()">
-                        📥 Export Data
-                    </div>
-                    <div class="user-dropdown-item" onclick="refreshData()">
-                        🔄 Refresh
-                    </div>
-                    <div class="user-dropdown-item danger" onclick="handleLogout()">
-                        🚪 Sign Out
-                    </div>
+                    <div class="user-dropdown-item" onclick="promptPushNotifications()">🔔 Enable Notifications</div>
+                    <div class="user-dropdown-item" onclick="sendTestPush()">🧪 Test Notification</div>
+                    <div class="user-dropdown-item" onclick="refreshData()">🔄 Refresh</div>
+                    <div class="user-dropdown-item" onclick="downloadCSV()">📥 Export Data</div>
+                    <div class="user-dropdown-item danger" onclick="handleLogout()">🚪 Sign Out</div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="main" id="mainContent" style="display: none;">
-        
-        <!-- Notification Status Bar -->
-        <div class="notif-status-bar" id="notifStatusBar">
-            <div class="notif-status-info">
-                <div class="notif-status-icon pending" id="notifIcon">🔔</div>
-                <div class="notif-status-text">
+    <main class="main" id="mainContent" style="display:none;">
+        <div class="notif-bar">
+            <div class="notif-bar-info">
+                <div class="notif-bar-icon" id="notifIcon">🔔</div>
+                <div class="notif-bar-text">
                     <strong>Push Notifications</strong>
-                    <span id="notifStatusText">Checking status...</span>
+                    <span id="notifStatusText">Checking...</span>
                 </div>
             </div>
-            <div class="notif-status-buttons">
-                <button class="btn btn-primary" onclick="promptPushNotifications()" id="enableNotifBtn">
-                    Enable Notifications
-                </button>
-                <button class="btn btn-secondary" onclick="sendTestPush()">
-                    🧪 Test
-                </button>
+            <div class="notif-bar-buttons">
+                <button class="btn btn-primary" onclick="promptPushNotifications()" id="enableNotifBtn">Enable</button>
+                <button class="btn btn-secondary" onclick="sendTestPush()">Test</button>
             </div>
         </div>
-        
-        <!-- Temperature Cards -->
+
         <div class="temp-grid">
             <div class="card" id="ambientCard">
                 <div class="card-header">
@@ -948,7 +696,7 @@
                 <div class="temp-value normal" id="ambientTemp">--.-°C</div>
                 <div class="temp-range">
                     <span>15°</span>
-                    <div class="range-bar"><div class="range-fill" id="ambientBar" style="width: 50%;"></div></div>
+                    <div class="range-bar"><div class="range-fill" id="ambientBar" style="width:50%;"></div></div>
                     <span>25°</span>
                 </div>
             </div>
@@ -961,7 +709,7 @@
                 <div class="temp-value normal" id="freezerTemp">--.-°C</div>
                 <div class="temp-range">
                     <span>2°</span>
-                    <div class="range-bar"><div class="range-fill" id="freezerBar" style="width: 50%;"></div></div>
+                    <div class="range-bar"><div class="range-fill" id="freezerBar" style="width:50%;"></div></div>
                     <span>8°</span>
                 </div>
             </div>
@@ -972,38 +720,33 @@
                     <span class="card-icon">📡</span>
                 </div>
                 <div class="info-row"><span class="info-label">Last Update</span><span class="info-value" id="lastUpdate">--:--</span></div>
-                <div class="info-row"><span class="info-label">WiFi</span><span class="info-value" id="wifiSignal">--</span></div>
+                <div class="info-row"><span class="info-label">WiFi Signal</span><span class="info-value" id="wifiSignal">--</span></div>
                 <div class="info-row"><span class="info-label">Alerts Today</span><span class="info-value" id="todayAlerts">0</span></div>
             </div>
         </div>
 
-        <!-- Stats -->
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">Avg Ambient</div><div class="stat-value" style="color: #4cc9f0;" id="todayAvgAmbient">--°</div></div>
-            <div class="stat-card"><div class="stat-label">Avg Fridge</div><div class="stat-value" style="color: #4361ee;" id="todayAvgFreezer">--°</div></div>
-            <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value" id="weekReadings">--</div></div>
-            <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value" id="monthReadings">--</div></div>
+            <div class="stat-card"><div class="stat-label">Avg Ambient</div><div class="stat-value" style="color:#4cc9f0;" id="todayAvgAmbient">--°</div></div>
+            <div class="stat-card"><div class="stat-label">Avg Fridge</div><div class="stat-value" style="color:#4361ee;" id="todayAvgFreezer">--°</div></div>
+            <div class="stat-card"><div class="stat-label">Week</div><div class="stat-value" id="weekReadings">--</div></div>
+            <div class="stat-card"><div class="stat-label">Month</div><div class="stat-value" id="monthReadings">--</div></div>
             <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="totalRecords">--</div></div>
         </div>
 
-        <!-- Chart -->
         <div class="chart-section">
             <div class="chart-header">
-                <h2 class="chart-title">📊 Temperature History</h2>
+                <h2 class="chart-title">📊 History</h2>
                 <div class="chart-tabs">
-                    <button class="chart-tab active" onclick="loadChart('daily', this)">Day</button>
-                    <button class="chart-tab" onclick="loadChart('weekly', this)">Week</button>
-                    <button class="chart-tab" onclick="loadChart('monthly', this)">Month</button>
+                    <button class="chart-tab active" onclick="loadChart('daily',this)">Day</button>
+                    <button class="chart-tab" onclick="loadChart('weekly',this)">Week</button>
+                    <button class="chart-tab" onclick="loadChart('monthly',this)">Month</button>
                 </div>
             </div>
             <div class="chart-container"><canvas id="tempChart"></canvas></div>
         </div>
 
-        <!-- Recent Readings -->
         <div class="table-section">
-            <div class="chart-header">
-                <h2 class="chart-title">📋 Recent Readings</h2>
-            </div>
+            <h2 class="chart-title" style="margin-bottom:15px;">📋 Recent Readings</h2>
             <table>
                 <thead><tr><th>Time</th><th>Ambient</th><th>Fridge</th><th>Status</th></tr></thead>
                 <tbody id="readingsTable"><tr><td colspan="4" style="text-align:center;padding:30px;">Loading...</td></tr></tbody>
@@ -1011,209 +754,99 @@
         </div>
     </main>
 
-    <footer class="footer" id="mainFooter" style="display: none;">
-        <p>Pharmacy Temperature Monitor • Push Notifications by OneSignal</p>
+    <footer class="footer" id="mainFooter" style="display:none;">
+        Pharmacy Temperature Monitor
     </footer>
 
     <script>
-        // ============================================
-        // CONFIGURATION
-        // ============================================
+        // Configuration
         const SUPABASE_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
-        
-        // OneSignal Configuration
         const ONESIGNAL_APP_ID = 'f4eadf19-be57-49f3-aa0e-907502675358';
-
+        
         const AMBIENT_MIN = 15, AMBIENT_MAX = 25;
         const FREEZER_MIN = 2, FREEZER_MAX = 8;
 
-        let sb = null;
-        let tempChart = null;
-        let currentUser = null;
-        let notifications = [];
+        let sb, tempChart, currentUser;
         let deferredPrompt = null;
-        let isSignupMode = false;
-        let oneSignalInitialized = false;
 
-        // ============================================
-        // ONESIGNAL INITIALIZATION
-        // ============================================
+        // Initialize OneSignal
         window.OneSignalDeferred = window.OneSignalDeferred || [];
-        
-        function initOneSignal() {
-            OneSignalDeferred.push(async function(OneSignal) {
-                try {
-                    await OneSignal.init({
-                        appId: ONESIGNAL_APP_ID,
-                        allowLocalhostAsSecureOrigin: true,
-                        serviceWorkerParam: { scope: '/' },
-                        serviceWorkerPath: 'OneSignalSDKWorker.js',
-                        notifyButton: {
-                            enable: false
-                        },
-                        welcomeNotification: {
-                            title: "Pharmacy Monitor",
-                            message: "You'll now receive temperature alerts!"
-                        }
-                    });
-                    
-                    oneSignalInitialized = true;
-                    console.log('✅ OneSignal initialized');
-                    
-                    // Check subscription status
-                    updatePushStatus();
-                    
-                    // Listen for subscription changes
-                    OneSignal.Notifications.addEventListener('permissionChange', (permission) => {
-                        console.log('Permission changed:', permission);
-                        updatePushStatus();
-                    });
-                    
-                } catch (error) {
-                    console.error('❌ OneSignal init error:', error);
-                }
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: ONESIGNAL_APP_ID,
+                allowLocalhostAsSecureOrigin: true
             });
-        }
+            console.log('OneSignal initialized');
+            updateNotifStatus();
+        });
 
-        async function updatePushStatus() {
+        async function updateNotifStatus() {
             const icon = document.getElementById('notifIcon');
             const text = document.getElementById('notifStatusText');
             const btn = document.getElementById('enableNotifBtn');
-            
-            if (!icon || !text || !btn) return;
             
             try {
                 const permission = await OneSignal.Notifications.permission;
                 const subscribed = await OneSignal.User.PushSubscription.optedIn;
                 
-                console.log('Push status - Permission:', permission, 'Subscribed:', subscribed);
-                
                 if (permission && subscribed) {
-                    icon.className = 'notif-status-icon granted';
+                    icon.className = 'notif-bar-icon enabled';
                     icon.textContent = '✅';
-                    text.textContent = 'Enabled - You will receive alerts';
+                    text.textContent = 'Enabled';
                     text.style.color = '#00d9a5';
-                    btn.textContent = '✓ Enabled';
+                    btn.textContent = 'Enabled ✓';
                     btn.disabled = true;
-                    btn.style.opacity = '0.7';
-                } else if (permission === false) {
-                    icon.className = 'notif-status-icon denied';
+                } else if (Notification.permission === 'denied') {
+                    icon.className = 'notif-bar-icon disabled';
                     icon.textContent = '🚫';
-                    text.textContent = 'Blocked - Check browser settings';
+                    text.textContent = 'Blocked';
                     text.style.color = '#e94560';
-                    btn.textContent = 'Blocked';
-                    btn.disabled = true;
                 } else {
-                    icon.className = 'notif-status-icon pending';
                     icon.textContent = '🔔';
-                    text.textContent = 'Click to enable push notifications';
+                    text.textContent = 'Click Enable';
                     text.style.color = '#ffd166';
-                    btn.textContent = 'Enable Notifications';
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
                 }
-            } catch (error) {
-                console.error('Error checking push status:', error);
-                text.textContent = 'Status unknown';
+            } catch(e) {
+                console.log('Status check error:', e);
             }
         }
 
         async function promptPushNotifications() {
-            console.log('🔔 Requesting push permission...');
-            
             try {
-                // Request permission through OneSignal
                 await OneSignal.Notifications.requestPermission();
-                
-                // Opt in the user
                 await OneSignal.User.PushSubscription.optIn();
-                
-                showToast('Push notifications enabled! 🎉', 'success');
-                updatePushStatus();
-                
-                // Get player ID for server-side notifications
-                const playerId = await OneSignal.User.PushSubscription.id;
-                console.log('OneSignal Player ID:', playerId);
-                
-                // Store player ID in user metadata if logged in
-                if (currentUser && playerId) {
-                    await storePlayerId(playerId);
-                }
-                
-            } catch (error) {
-                console.error('Error enabling push:', error);
+                showToast('Notifications enabled!', 'success');
+                updateNotifStatus();
+            } catch(e) {
                 showToast('Could not enable notifications', 'error');
             }
         }
 
-        async function storePlayerId(playerId) {
-            // Store in localStorage for now
-            localStorage.setItem('oneSignalPlayerId', playerId);
-            
-            // Optionally store in Supabase user metadata
-            if (currentUser && currentUser.id) {
-                try {
-                    await sb.from('user_push_tokens').upsert({
-                        user_id: currentUser.id,
-                        player_id: playerId,
-                        updated_at: new Date().toISOString()
-                    });
-                    console.log('Player ID stored in database');
-                } catch (e) {
-                    console.log('Could not store player ID in database (table may not exist)');
-                }
-            }
-        }
-
         async function sendTestPush() {
-            console.log('🧪 Sending test push...');
-            
             try {
                 const subscribed = await OneSignal.User.PushSubscription.optedIn;
-                
                 if (!subscribed) {
-                    showToast('Enable notifications first!', 'warning');
-                    promptPushNotifications();
+                    showToast('Enable notifications first', 'warning');
                     return;
                 }
-                
-                // Send via OneSignal Tags (triggers server-side)
-                await OneSignal.User.addTag('test_notification', Date.now().toString());
-                
-                // Also show a local notification
-                showToast('Test notification sent!', 'success');
-                
-                // Add to in-app notifications
-                addNotification('🧪 Test Notification', 'Push notifications are working!', 'success');
-                
-            } catch (error) {
-                console.error('Test push error:', error);
-                showToast('Error sending test', 'error');
+                await OneSignal.User.addTag('test', Date.now().toString());
+                showToast('Test sent!', 'success');
+            } catch(e) {
+                showToast('Error', 'error');
             }
         }
 
-        // ============================================
-        // PWA INSTALL
-        // ============================================
+        // PWA Install
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            setTimeout(() => {
-                document.getElementById('installBanner').classList.add('show');
-            }, 2000);
+            document.getElementById('installBanner').classList.add('show');
         });
 
         async function installApp() {
-            if (!deferredPrompt) {
-                showToast('App already installed or not available', 'info');
-                return;
-            }
+            if (!deferredPrompt) return;
             deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                showToast('App installed! 🎉', 'success');
-            }
             deferredPrompt = null;
             hideInstallBanner();
         }
@@ -1222,44 +855,10 @@
             document.getElementById('installBanner').classList.remove('show');
         }
 
-        // ============================================
-        // SERVICE WORKER
-        // ============================================
-        async function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                try {
-                    const reg = await navigator.serviceWorker.register('sw.js');
-                    console.log('✅ SW registered');
-                    return reg;
-                } catch (error) {
-                    console.error('❌ SW registration failed:', error);
-                    return null;
-                }
-            }
-            return null;
-        }
-
-        // ============================================
-        // AUTHENTICATION
-        // ============================================
-        function showSignup() {
-            isSignupMode = true;
-            document.getElementById('loginBtn').textContent = 'Sign Up';
-            document.getElementById('signupSwitch').style.display = 'none';
-            document.getElementById('loginSwitch').style.display = 'block';
-        }
-
-        function showLogin() {
-            isSignupMode = false;
-            document.getElementById('loginBtn').textContent = 'Sign In';
-            document.getElementById('signupSwitch').style.display = 'block';
-            document.getElementById('loginSwitch').style.display = 'none';
-        }
-
+        // Auth
         function demoLogin() {
-            currentUser = { email: 'demo@pharmacy.com', id: 'demo' };
+            currentUser = { email: 'demo@pharmacy.com' };
             showDashboard();
-            showToast('Welcome! Demo mode active', 'success');
         }
 
         async function handleLogin(e) {
@@ -1267,43 +866,34 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const btn = document.getElementById('loginBtn');
-            const errorEl = document.getElementById('loginError');
+            const err = document.getElementById('loginError');
 
             btn.disabled = true;
-            btn.textContent = isSignupMode ? 'Creating...' : 'Signing in...';
-            errorEl.classList.remove('show');
+            btn.textContent = 'Signing in...';
+            err.classList.remove('show');
 
             try {
-                let result;
-                if (isSignupMode) {
-                    result = await sb.auth.signUp({ email, password });
-                    if (result.error) throw result.error;
-                    showToast('Account created! Check email to verify.', 'success');
-                    showLogin();
-                } else {
-                    result = await sb.auth.signInWithPassword({ email, password });
-                    if (result.error) throw result.error;
-                    currentUser = result.data.user;
-                    showDashboard();
-                }
-            } catch (error) {
-                errorEl.textContent = error.message;
-                errorEl.classList.add('show');
+                const { data, error } = await sb.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                currentUser = data.user;
+                showDashboard();
+            } catch(error) {
+                err.textContent = error.message;
+                err.classList.add('show');
             }
-
+            
             btn.disabled = false;
-            btn.textContent = isSignupMode ? 'Sign Up' : 'Sign In';
+            btn.textContent = 'Sign In';
         }
 
-        async function handleLogout() {
-            await sb.auth.signOut();
+        function handleLogout() {
+            sb.auth.signOut();
             currentUser = null;
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('mainHeader').style.display = 'none';
             document.getElementById('mainContent').style.display = 'none';
             document.getElementById('mainFooter').style.display = 'none';
-            toggleUserMenu(true);
-            showToast('Signed out', 'info');
+            document.getElementById('userDropdown').classList.remove('show');
         }
 
         function showDashboard() {
@@ -1314,128 +904,105 @@
 
             if (currentUser) {
                 const email = currentUser.email;
-                const initial = email.charAt(0).toUpperCase();
-                document.getElementById('userAvatar').textContent = initial;
+                document.getElementById('userAvatar').textContent = email[0].toUpperCase();
                 document.getElementById('userEmail').textContent = email;
                 document.getElementById('userEmailDisplay').textContent = email;
                 document.getElementById('userName').textContent = email.split('@')[0];
             }
 
             loadData();
-            updatePushStatus();
-            
-            // Prompt for notifications after delay
-            setTimeout(() => {
-                OneSignalDeferred.push(async function(OneSignal) {
-                    const subscribed = await OneSignal.User.PushSubscription.optedIn;
-                    if (!subscribed) {
-                        showToast('Enable push notifications for alerts!', 'info');
-                    }
-                });
-            }, 3000);
         }
 
-        // ============================================
-        // DATA LOADING
-        // ============================================
+        function toggleUserMenu() {
+            document.getElementById('userDropdown').classList.toggle('show');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('userDropdown').classList.remove('show');
+            }
+        });
+
+        // Data Loading
         async function loadData() {
             try {
                 await loadCurrentReading();
-                await loadStatistics();
+                await loadStats();
                 await loadRecentReadings();
-                initializeChart();
+                initChart();
                 await loadChart('daily');
                 setupRealtime();
-
+                
                 document.getElementById('statusDot').classList.add('connected');
                 document.getElementById('statusText').textContent = 'Live';
-            } catch (error) {
-                console.error('Load error:', error);
-                showToast('Error: ' + error.message, 'error');
+            } catch(e) {
+                showToast('Error loading data', 'error');
+                console.error(e);
             }
         }
 
         async function loadCurrentReading() {
-            const { data, error } = await sb
+            const { data } = await sb
                 .from('temperature_readings')
                 .select('*')
                 .order('timestamp', { ascending: false })
                 .limit(1)
                 .single();
-
-            if (!error && data) {
-                updateTemperatureDisplay(data, false);
-            }
+            
+            if (data) updateDisplay(data);
         }
 
-        function updateTemperatureDisplay(r, checkAlerts = true) {
+        function updateDisplay(r) {
             const ambient = parseFloat(r.ambient_temp);
             const freezer = parseFloat(r.freezer_temp);
-
             const ambientAlert = ambient < AMBIENT_MIN || ambient > AMBIENT_MAX;
             const freezerAlert = freezer < FREEZER_MIN || freezer > FREEZER_MAX;
 
-            // Update ambient display
             document.getElementById('ambientTemp').textContent = ambient.toFixed(1) + '°C';
             document.getElementById('ambientTemp').className = 'temp-value ' + (ambientAlert ? 'alert' : 'normal');
             document.getElementById('ambientCard').classList.toggle('alert', ambientAlert);
+            document.getElementById('ambientBar').style.width = Math.min(100, Math.max(0, ((ambient - AMBIENT_MIN) / (AMBIENT_MAX - AMBIENT_MIN)) * 100)) + '%';
             document.getElementById('ambientBar').classList.toggle('alert', ambientAlert);
-            document.getElementById('ambientBar').style.width = Math.max(0, Math.min(100, ((ambient - AMBIENT_MIN) / (AMBIENT_MAX - AMBIENT_MIN)) * 100)) + '%';
 
-            // Update freezer display
             document.getElementById('freezerTemp').textContent = freezer.toFixed(1) + '°C';
             document.getElementById('freezerTemp').className = 'temp-value ' + (freezerAlert ? 'alert' : 'normal');
             document.getElementById('freezerCard').classList.toggle('alert', freezerAlert);
+            document.getElementById('freezerBar').style.width = Math.min(100, Math.max(0, ((freezer - FREEZER_MIN) / (FREEZER_MAX - FREEZER_MIN)) * 100)) + '%';
             document.getElementById('freezerBar').classList.toggle('alert', freezerAlert);
-            document.getElementById('freezerBar').style.width = Math.max(0, Math.min(100, ((freezer - FREEZER_MIN) / (FREEZER_MAX - FREEZER_MIN)) * 100)) + '%';
 
-            // Update status
             document.getElementById('lastUpdate').textContent = new Date(r.timestamp).toLocaleTimeString();
-            document.getElementById('wifiSignal').textContent = (r.wifi_rssi ?? '--') + ' dBm';
-
-            // Check for alerts (only for new readings)
-            if (checkAlerts && (ambientAlert || freezerAlert)) {
-                const alertMessages = [];
-                if (ambientAlert) alertMessages.push(`Ambient: ${ambient.toFixed(1)}°C`);
-                if (freezerAlert) alertMessages.push(`Fridge: ${freezer.toFixed(1)}°C`);
-                
-                const alertMsg = alertMessages.join(' | ');
-                addNotification('🚨 Temperature Alert!', alertMsg, 'alert');
-                showToast('⚠️ ' + alertMsg, 'error');
-            }
+            document.getElementById('wifiSignal').textContent = (r.wifi_rssi || '--') + ' dBm';
         }
 
-        async function loadStatistics() {
+        async function loadStats() {
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-            const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
-            const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+            const weekAgo = new Date(now - 7*24*60*60*1000).toISOString();
+            const monthAgo = new Date(now - 30*24*60*60*1000).toISOString();
 
             const { data: todayData } = await sb
                 .from('temperature_readings')
-                .select('ambient_temp, freezer_temp, ambient_alert, freezer_alert')
+                .select('*')
                 .gte('timestamp', todayStart);
 
-            if (todayData && todayData.length > 0) {
-                const avgA = todayData.reduce((s, r) => s + parseFloat(r.ambient_temp), 0) / todayData.length;
-                const avgF = todayData.reduce((s, r) => s + parseFloat(r.freezer_temp), 0) / todayData.length;
-
+            if (todayData?.length) {
+                const avgA = todayData.reduce((s,r) => s + parseFloat(r.ambient_temp), 0) / todayData.length;
+                const avgF = todayData.reduce((s,r) => s + parseFloat(r.freezer_temp), 0) / todayData.length;
                 document.getElementById('todayAvgAmbient').textContent = avgA.toFixed(1) + '°';
                 document.getElementById('todayAvgFreezer').textContent = avgF.toFixed(1) + '°';
-
-                const alertCount = todayData.filter(r => r.ambient_alert || r.freezer_alert).length;
-                document.getElementById('todayAlerts').textContent = alertCount;
-                document.getElementById('todayAlerts').style.color = alertCount > 0 ? '#e94560' : '#00d9a5';
+                
+                const alerts = todayData.filter(r => r.ambient_alert || r.freezer_alert).length;
+                document.getElementById('todayAlerts').textContent = alerts;
+                document.getElementById('todayAlerts').style.color = alerts > 0 ? '#e94560' : '#00d9a5';
             }
 
-            const { count: weekCount } = await sb.from('temperature_readings').select('*', { count: 'exact', head: true }).gte('timestamp', weekAgo);
-            document.getElementById('weekReadings').textContent = weekCount || 0;
-
-            const { count: monthCount } = await sb.from('temperature_readings').select('*', { count: 'exact', head: true }).gte('timestamp', monthAgo);
-            document.getElementById('monthReadings').textContent = monthCount || 0;
-
-            const { count: totalCount } = await sb.from('temperature_readings').select('*', { count: 'exact', head: true });
-            document.getElementById('totalRecords').textContent = totalCount || 0;
+            const { count: week } = await sb.from('temperature_readings').select('*', { count: 'exact', head: true }).gte('timestamp', weekAgo);
+            const { count: month } = await sb.from('temperature_readings').select('*', { count: 'exact', head: true }).gte('timestamp', monthAgo);
+            const { count: total } = await sb.from('temperature_readings').select('*', { count: 'exact', head: true });
+            
+            document.getElementById('weekReadings').textContent = week || 0;
+            document.getElementById('monthReadings').textContent = month || 0;
+            document.getElementById('totalRecords').textContent = total || 0;
         }
 
         async function loadRecentReadings() {
@@ -1446,28 +1013,25 @@
                 .limit(15);
 
             const tbody = document.getElementById('readingsTable');
-
-            if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:#a0a0b0;">No readings yet</td></tr>';
+            
+            if (!data?.length) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;">No data</td></tr>';
                 return;
             }
 
             tbody.innerHTML = data.map(r => {
-                const isAlert = r.ambient_alert || r.freezer_alert;
-                const time = new Date(r.timestamp);
+                const alert = r.ambient_alert || r.freezer_alert;
                 return `<tr>
-                    <td>${time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                    <td style="color:${r.ambient_alert ? '#e94560' : '#4cc9f0'};">${parseFloat(r.ambient_temp).toFixed(1)}°</td>
-                    <td style="color:${r.freezer_alert ? '#e94560' : '#4361ee'};">${parseFloat(r.freezer_temp).toFixed(1)}°</td>
-                    <td><span class="badge ${isAlert ? 'alert' : 'ok'}">${isAlert ? '⚠️' : '✓'}</span></td>
+                    <td>${new Date(r.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+                    <td style="color:${r.ambient_alert ? '#e94560' : '#4cc9f0'}">${parseFloat(r.ambient_temp).toFixed(1)}°</td>
+                    <td style="color:${r.freezer_alert ? '#e94560' : '#4361ee'}">${parseFloat(r.freezer_temp).toFixed(1)}°</td>
+                    <td><span class="badge ${alert ? 'alert' : 'ok'}">${alert ? '⚠️' : '✓'}</span></td>
                 </tr>`;
             }).join('');
         }
 
-        // ============================================
-        // CHART
-        // ============================================
-        function initializeChart() {
+        // Chart
+        function initChart() {
             const ctx = document.getElementById('tempChart').getContext('2d');
             if (tempChart) tempChart.destroy();
             
@@ -1476,5 +1040,115 @@
                 data: {
                     labels: [],
                     datasets: [
-                        { label: 'Ambient', data: [], borderColor: '#4cc9f0', backgroundColor: 'rgba(76,201,240,0.1)', fill: true, tension: 0.4, pointRadius: 2 },
-                        { label: 'Fridge', data: [], borderColor: '#4361ee', backgroundColor: 'rgba(67,97,238,0.1)', fill
+                        { label: 'Ambient', data: [], borderColor: '#4cc9f0', backgroundColor: 'rgba(76,201,240,0.1)', fill: true, tension: 0.4 },
+                        { label: 'Fridge', data: [], borderColor: '#4361ee', backgroundColor: 'rgba(67,97,238,0.1)', fill: true, tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#a0a0b0' } } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0a0b0' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0a0b0' } }
+                    }
+                }
+            });
+        }
+
+        async function loadChart(period, btn) {
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            else document.querySelector('.chart-tab').classList.add('active');
+
+            const now = new Date();
+            let start;
+            if (period === 'daily') start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            else if (period === 'weekly') start = new Date(now - 7*24*60*60*1000);
+            else start = new Date(now - 30*24*60*60*1000);
+
+            const { data } = await sb
+                .from('temperature_readings')
+                .select('timestamp, ambient_temp, freezer_temp')
+                .gte('timestamp', start.toISOString())
+                .order('timestamp');
+
+            if (!data?.length) return;
+
+            const sampled = data.length > 50 ? data.filter((_,i) => i % Math.ceil(data.length/50) === 0) : data;
+
+            tempChart.data.labels = sampled.map(r => {
+                const d = new Date(r.timestamp);
+                if (period === 'daily') return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+                if (period === 'weekly') return d.toLocaleDateString([],{weekday:'short'});
+                return d.toLocaleDateString([],{month:'short',day:'numeric'});
+            });
+            
+            tempChart.data.datasets[0].data = sampled.map(r => parseFloat(r.ambient_temp));
+            tempChart.data.datasets[1].data = sampled.map(r => parseFloat(r.freezer_temp));
+            tempChart.update();
+        }
+
+        // Realtime
+        function setupRealtime() {
+            sb.channel('readings')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'temperature_readings' }, payload => {
+                    updateDisplay(payload.new);
+                    loadRecentReadings();
+                    loadStats();
+                })
+                .subscribe();
+        }
+
+        // Utils
+        async function refreshData() {
+            showToast('Refreshing...', 'info');
+            await loadData();
+            showToast('Refreshed!', 'success');
+        }
+
+        async function downloadCSV() {
+            const { data } = await sb.from('temperature_readings').select('*').order('timestamp', { ascending: false });
+            if (!data?.length) return showToast('No data', 'warning');
+            
+            const csv = 'Timestamp,Ambient,Fridge,Ambient Alert,Fridge Alert\n' + 
+                data.map(r => `${r.timestamp},${r.ambient_temp},${r.freezer_temp},${r.ambient_alert},${r.freezer_alert}`).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'temperature_data.csv';
+            a.click();
+            showToast('Downloaded!', 'success');
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = `<span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            // Check session
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                showDashboard();
+            }
+            
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        });
+
+        // Register SW
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
