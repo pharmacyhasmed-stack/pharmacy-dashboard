@@ -316,7 +316,8 @@
     </div>
 
     <script>
-        // CONFIG
+       <script>
+        // CONFIG - ONLY ONE DECLARATION ALLOWED
         const S_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
         const F_CONFIG = {
@@ -332,7 +333,7 @@
 
         function addLog(m) {
             const lb = document.getElementById('logBox');
-            lb.innerHTML = `> ${m}<br>${lb.innerHTML}`;
+            if(lb) lb.innerHTML = `> ${m}<br>${lb.innerHTML}`;
         }
 
         // --- CHART LOGIC ---
@@ -357,7 +358,7 @@
         }
 
         async function fetchHistory(range) {
-            let limit = 24; // Default day
+            let limit = 24; 
             if(range === 'week') limit = 168;
             if(range === 'month') limit = 720;
 
@@ -377,8 +378,12 @@
 
         function updateRange(range) {
             currentRange = range;
-            ['day', 'week', 'month'].forEach(r => document.getElementById('btn' + r.charAt(0).toUpperCase() + r.slice(1)).classList.remove('active'));
-            document.getElementById('btn' + range.charAt(0).toUpperCase() + range.slice(1)).classList.add('active');
+            ['day', 'week', 'month'].forEach(r => {
+                const btn = document.getElementById('btn' + r.charAt(0).toUpperCase() + r.slice(1));
+                if(btn) btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById('btn' + range.charAt(0).toUpperCase() + range.slice(1));
+            if(activeBtn) activeBtn.classList.add('active');
             fetchHistory(range);
         }
 
@@ -388,7 +393,9 @@
                 addLog("FCM not supported on this browser");
                 return;
             }
-            firebase.initializeApp(F_CONFIG);
+            if (!firebase.apps.length) {
+                firebase.initializeApp(F_CONFIG);
+            }
             const messaging = firebase.messaging();
             
             messaging.onMessage((payload) => {
@@ -398,38 +405,40 @@
         }
 
         async function subscribePush() {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                const messaging = firebase.messaging();
-                const token = await messaging.getToken({ vapidKey: 'BCXgZy1ydjIHfjif1l0ktbMRHkY8lBipHu9vaW8ETWOztov7PfljN_dgSXRyihT73SrQo9lV1PRO9a74kCXb3rk' });
-                addLog("FCM Token Generated");
-                document.getElementById('subBtn').innerText = "Enabled ✓";
-                document.getElementById('notifMsg').innerText = "Notifications active.";
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const messaging = firebase.messaging();
+                    const token = await messaging.getToken({ vapidKey: 'BCXgZy1ydjIHfjif1l0ktbMRHkY8lBipHu9vaW8ETWOztov7PfljN_dgSXRyihT73SrQo9lV1PRO9a74kCXb3rk' });
+                    addLog("FCM Token Generated");
+                    document.getElementById('subBtn').innerText = "Enabled ✓";
+                }
+            } catch (err) {
+                addLog("Push Error: " + err.message);
             }
         }
 
-        // --- APP START ---
         async function start() {
-            db = supabase.createClient(S_URL, S_KEY);
-            initChart();
-            initFirebase();
-            
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
+            try {
+                db = supabase.createClient(S_URL, S_KEY);
+                initChart();
+                initFirebase();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
 
-            // Realtime Update
-            db.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'temperature_readings' }, payload => {
-                const r = payload.new;
-                document.getElementById('ambVal').innerText = r.ambient_temp.toFixed(1) + '°C';
-                document.getElementById('friVal').innerText = r.freezer_temp.toFixed(1) + '°C';
-                addLog("Live Update: " + r.ambient_temp + "°C");
-                if (currentRange === 'day') fetchHistory('day');
-            }).subscribe();
+                db.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'temperature_readings' }, payload => {
+                    const r = payload.new;
+                    document.getElementById('ambVal').innerText = r.ambient_temp.toFixed(1) + '°C';
+                    document.getElementById('friVal').innerText = r.freezer_temp.toFixed(1) + '°C';
+                    if (currentRange === 'day') fetchHistory('day');
+                }).subscribe();
 
-            updateRange('day');
+                updateRange('day');
+            } catch (e) {
+                addLog("Start error: " + e.message);
+            }
         }
 
         start();
     </script>
-</body>
-</html>
