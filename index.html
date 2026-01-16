@@ -2,953 +2,576 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0a0a0f">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="icon" href="icon-192.png">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pharmacy Monitor</title>
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0a0a0f;
             color: #fff;
             min-height: 100vh;
+            padding: 15px;
         }
         
-        #loading {
-            position: fixed;
-            inset: 0;
-            background: #0a0a0f;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        
-        #loading.hide { display: none; }
-        
-        .spinner {
-            width: 44px;
-            height: 44px;
-            border: 4px solid #222;
-            border-top-color: #4361ee;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        #loginPage {
-            position: fixed;
-            inset: 0;
-            background: #0a0a0f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 1000;
-        }
-        
-        #loginPage.hide { display: none; }
-        
-        .login-card {
-            background: #151520;
-            border-radius: 16px;
-            padding: 28px;
-            width: 100%;
-            max-width: 360px;
-            border: 1px solid #252535;
+        .header {
             text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
         }
         
-        .login-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #4361ee, #4cc9f0);
-            border-radius: 14px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin-bottom: 14px;
-        }
-        
-        .login-card h1 { font-size: 18px; margin-bottom: 4px; }
-        .login-card p { color: #666; font-size: 13px; margin-bottom: 20px; }
-        
-        .input-group { margin-bottom: 14px; text-align: left; }
-        .input-group label { display: block; margin-bottom: 5px; color: #888; font-size: 12px; }
-        
-        .input-group input {
-            width: 100%;
-            padding: 11px 12px;
-            background: #0a0a0f;
-            border: 1px solid #252535;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 15px;
-        }
-        
-        .input-group input:focus { outline: none; border-color: #4361ee; }
-        
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 8px;
-        }
-        
-        .btn-primary { background: linear-gradient(135deg, #4361ee, #4cc9f0); color: #fff; }
-        .btn-secondary { background: #252535; color: #fff; }
-        
-        .error-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid #ef4444;
-            color: #ef4444;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 14px;
-            font-size: 12px;
-            display: none;
-        }
-        
-        .error-box.show { display: block; }
-        
-        header {
-            background: #101018;
-            padding: 10px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #252535;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .brand { display: flex; align-items: center; gap: 8px; }
-        
-        .brand-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #4361ee, #4cc9f0);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-        
-        .brand h1 { font-size: 14px; }
-        .brand small { color: #666; font-size: 10px; display: block; }
-        
-        .header-right { display: flex; align-items: center; gap: 8px; }
-        
-        .live-badge {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 8px;
-            background: #151520;
-            border-radius: 12px;
-            font-size: 11px;
-        }
-        
-        .live-dot {
-            width: 7px;
-            height: 7px;
-            background: #ef4444;
-            border-radius: 50%;
-        }
-        
-        .live-dot.on {
-            background: #22c55e;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-            50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
-        }
-        
-        .logout-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        
-        main { padding: 12px; max-width: 700px; margin: 0 auto; }
-        
-        .notif-card {
-            background: #151520;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #252535;
-        }
-        
-        .notif-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .notif-info { display: flex; align-items: center; gap: 10px; }
-        
-        .notif-icon {
-            width: 34px;
-            height: 34px;
-            background: #252535;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-        
-        .notif-icon.ok { background: rgba(34, 197, 94, 0.15); }
-        .notif-icon.err { background: rgba(239, 68, 68, 0.15); }
-        
-        .notif-text strong { display: block; font-size: 13px; }
-        .notif-text span { color: #888; font-size: 11px; }
-        
-        .notif-btns { display: flex; gap: 6px; }
-        
-        .notif-btns button {
-            padding: 7px 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        
-        .btn-sub { background: #4361ee; color: #fff; }
-        .btn-sub:disabled { opacity: 0.5; }
-        .btn-test { background: #252535; color: #fff; }
-        
-        .debug-box {
-            background: #0a0a0f;
-            border-radius: 6px;
-            padding: 8px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 9px;
-            color: #888;
-            max-height: 70px;
-            overflow-y: auto;
-            word-break: break-all;
-        }
-        
-        .cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
+        .header h1 { font-size: 22px; margin-bottom: 5px; }
+        .header p { color: #888; font-size: 13px; }
         
         .card {
             background: #151520;
-            border-radius: 10px;
-            padding: 14px;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
             border: 1px solid #252535;
         }
         
-        .card.alert { border-color: #ef4444; }
+        .card h2 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #4cc9f0;
+        }
         
-        .card-label { color: #888; font-size: 10px; text-transform: uppercase; margin-bottom: 6px; }
+        .temps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
         
-        .temp {
+        .temp-box {
+            background: #0a0a0f;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .temp-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .temp-value {
             font-size: 28px;
-            font-weight: 700;
+            font-weight: bold;
             font-family: monospace;
         }
         
-        .temp.ok { color: #22c55e; }
-        .temp.bad { color: #ef4444; }
+        .temp-value.ok { color: #22c55e; }
+        .temp-value.bad { color: #ef4444; }
         
-        .info-card {
-            background: #151520;
-            border-radius: 10px;
-            padding: 12px;
-            border: 1px solid #252535;
-            margin-bottom: 12px;
-        }
-        
-        .info-row {
+        .status-row {
             display: flex;
             justify-content: space-between;
-            padding: 7px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #252535;
+            font-size: 13px;
+        }
+        
+        .status-row:last-child { border-bottom: none; }
+        .status-row .label { color: #888; }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4361ee, #4cc9f0);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #252535;
+            color: white;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .notif-status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .notif-status.granted {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+        
+        .notif-status.denied {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .notif-status.default {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+        
+        .log {
+            background: #0a0a0f;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 10px;
+            color: #888;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 12px;
         }
         
-        .info-row:last-child { border-bottom: none; }
-        .info-row .lbl { color: #888; }
-        
-        .table-card {
-            background: #151520;
-            border-radius: 10px;
-            padding: 12px;
-            border: 1px solid #252535;
-            overflow-x: auto;
+        th, td {
+            padding: 10px 6px;
+            text-align: left;
+            border-bottom: 1px solid #252535;
         }
         
-        .table-card h2 { font-size: 13px; margin-bottom: 10px; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th, td { padding: 7px 5px; text-align: left; border-bottom: 1px solid #252535; }
-        th { color: #888; font-size: 9px; text-transform: uppercase; }
+        th {
+            color: #888;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
         
         .badge {
-            padding: 2px 7px;
-            border-radius: 8px;
-            font-size: 9px;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
             font-weight: 600;
         }
         
         .badge.ok { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
         .badge.bad { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
         
-        .toasts {
-            position: fixed;
-            top: 50px;
-            right: 10px;
-            z-index: 9000;
+        .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
         }
         
-        .toast {
-            background: #151520;
-            border: 1px solid #252535;
-            padding: 10px 12px;
-            border-radius: 8px;
-            margin-bottom: 6px;
-            font-size: 11px;
-            max-width: 240px;
-            animation: slideIn 0.3s;
-        }
-        
-        .toast.success { border-left: 3px solid #22c55e; }
-        .toast.error { border-left: 3px solid #ef4444; }
-        .toast.info { border-left: 3px solid #4361ee; }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        #app { display: none; }
-        #app.show { display: block; }
-        
-        @media (max-width: 400px) {
-            .cards { grid-template-columns: 1fr; }
-            .temp { font-size: 24px; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
 <body>
-    <div id="loading">
-        <div class="spinner"></div>
-        <p style="margin-top:12px;color:#666;font-size:13px;" id="loadingText">Loading...</p>
+
+<div class="header">
+    <h1>🌡️ Pharmacy Monitor</h1>
+    <p><span class="live-dot"></span>Live Temperature Monitoring</p>
+</div>
+
+<!-- Notifications Card -->
+<div class="card">
+    <h2>🔔 Notifications</h2>
+    
+    <div class="notif-status default" id="notifStatus">
+        Checking notification support...
     </div>
+    
+    <button class="btn btn-primary" id="enableBtn" onclick="enableNotifications()">
+        Enable Notifications
+    </button>
+    
+    <button class="btn btn-secondary" id="testBtn" onclick="testNotification()">
+        🧪 Test Notification
+    </button>
+    
+    <div class="log" id="log">Initializing...</div>
+</div>
 
-    <div class="toasts" id="toasts"></div>
-
-    <div id="loginPage">
-        <div class="login-card">
-            <div class="login-icon">🌡️</div>
-            <h1>Pharmacy Monitor</h1>
-            <p>Temperature Monitoring</p>
-            
-            <div class="error-box" id="loginError"></div>
-            
-            <form id="loginForm">
-                <div class="input-group">
-                    <label>Email</label>
-                    <input type="email" id="emailInput" placeholder="email@example.com" required>
-                </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" id="passInput" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Sign In</button>
-            </form>
-            
-            <button type="button" class="btn btn-secondary" onclick="demoLogin()">🚀 Demo Login</button>
+<!-- Temperature Card -->
+<div class="card">
+    <h2>📊 Current Readings</h2>
+    
+    <div class="temps">
+        <div class="temp-box">
+            <div class="temp-label">🏠 AMBIENT</div>
+            <div class="temp-value ok" id="ambientTemp">--.-°C</div>
+        </div>
+        <div class="temp-box">
+            <div class="temp-label">🧊 FRIDGE</div>
+            <div class="temp-value ok" id="fridgeTemp">--.-°C</div>
         </div>
     </div>
+</div>
 
-    <div id="app">
-        <header>
-            <div class="brand">
-                <div class="brand-icon">🌡️</div>
-                <div>
-                    <h1>Pharmacy Monitor</h1>
-                    <small id="userEmail">demo@pharmacy.com</small>
-                </div>
-            </div>
-            <div class="header-right">
-                <div class="live-badge">
-                    <div class="live-dot" id="liveDot"></div>
-                    <span id="liveText">Connecting</span>
-                </div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-        </header>
-
-        <main>
-            <div class="notif-card">
-                <div class="notif-row">
-                    <div class="notif-info">
-                        <div class="notif-icon" id="notifIcon">🔔</div>
-                        <div class="notif-text">
-                            <strong>Push Notifications</strong>
-                            <span id="notifStatus">Loading Firebase...</span>
-                        </div>
-                    </div>
-                    <div class="notif-btns">
-                        <button class="btn-sub" id="subBtn" onclick="subscribePush()">Subscribe</button>
-                        <button class="btn-test" onclick="testPush()">Test</button>
-                    </div>
-                </div>
-                <div class="debug-box" id="debug">Initializing...</div>
-            </div>
-
-            <div class="cards">
-                <div class="card" id="ambientCard">
-                    <div class="card-label">🏠 Ambient</div>
-                    <div class="temp ok" id="ambientTemp">--.-°C</div>
-                </div>
-                <div class="card" id="fridgeCard">
-                    <div class="card-label">🧊 Fridge</div>
-                    <div class="temp ok" id="fridgeTemp">--.-°C</div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-row">
-                    <span class="lbl">Last Update</span>
-                    <span id="lastUpdate">--:--</span>
-                </div>
-                <div class="info-row">
-                    <span class="lbl">WiFi Signal</span>
-                    <span id="wifi">-- dBm</span>
-                </div>
-                <div class="info-row">
-                    <span class="lbl">Alerts Today</span>
-                    <span id="alertsToday">0</span>
-                </div>
-                <div class="info-row">
-                    <span class="lbl">Total Readings</span>
-                    <span id="totalCount">--</span>
-                </div>
-            </div>
-
-            <div class="table-card">
-                <h2>📋 Recent Readings</h2>
-                <table>
-                    <thead>
-                        <tr><th>Time</th><th>Ambient</th><th>Fridge</th><th>Status</th></tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr><td colspan="4" style="text-align:center;padding:20px;color:#666;">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </main>
+<!-- Status Card -->
+<div class="card">
+    <h2>ℹ️ Status</h2>
+    
+    <div class="status-row">
+        <span class="label">Last Update</span>
+        <span id="lastUpdate">--:--</span>
     </div>
+    <div class="status-row">
+        <span class="label">Connection</span>
+        <span id="connection">Connecting...</span>
+    </div>
+    <div class="status-row">
+        <span class="label">Alerts Today</span>
+        <span id="alertCount">0</span>
+    </div>
+</div>
 
-    <!-- Load Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+<!-- History Card -->
+<div class="card">
+    <h2>📋 Recent History</h2>
     
-    <script>
-    // ===== CONFIG =====
-    var SUPABASE_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Ambient</th>
+                <th>Fridge</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="historyTable">
+            <tr><td colspan="4" style="text-align:center;color:#666;">Loading...</td></tr>
+        </tbody>
+    </table>
+</div>
 
-    var FIREBASE_CONFIG = {
-        apiKey: "AIzaSyAqYKrGCKupCxfH5w4vIpEYnhYyb0azSmw",
-        authDomain: "pharmacy-monitor-2307f.firebaseapp.com",
-        projectId: "pharmacy-monitor-2307f",
-        storageBucket: "pharmacy-monitor-2307f.firebasestorage.app",
-        messagingSenderId: "525242127430",
-        appId: "1:525242127430:web:c258994af86e35b0456647"
-    };
+<script>
+// ============================================
+// CONFIGURATION
+// ============================================
+var SUPABASE_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ2vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
 
-    var VAPID_KEY = 'BCXgZy1ydjIHfjif1l0ktbMRHkY8lBipHu9vaW8ETWOztov7PfljN_dgSXRyihT73SrQo9lV1PRO9a74kCXb3rk';
+var AMBIENT_MIN = 15;
+var AMBIENT_MAX = 25;
+var FRIDGE_MIN = 2;
+var FRIDGE_MAX = 8;
+
+// ============================================
+// LOGGING
+// ============================================
+function log(message) {
+    console.log('[App] ' + message);
+    var logEl = document.getElementById('log');
+    var time = new Date().toLocaleTimeString();
+    logEl.innerHTML = '[' + time + '] ' + message + '\n' + logEl.innerHTML;
+    // Keep log small
+    if (logEl.innerHTML.length > 3000) {
+        logEl.innerHTML = logEl.innerHTML.substring(0, 3000);
+    }
+}
+
+// ============================================
+// NOTIFICATION FUNCTIONS
+// ============================================
+function checkNotificationSupport() {
+    log('Checking notification support...');
     
-    var AMBIENT_MIN = 15, AMBIENT_MAX = 25;
-    var FRIDGE_MIN = 2, FRIDGE_MAX = 8;
-
-    var db = null;
-    var user = null;
-    var messaging = null;
-    var fcmToken = null;
-
-    // ===== DEBUG =====
-    function log(msg) {
-        console.log('[App] ' + msg);
-        var el = document.getElementById('debug');
-        if (el) {
-            var time = new Date().toLocaleTimeString();
-            el.innerHTML = '[' + time + '] ' + msg + '<br>' + el.innerHTML;
-            if (el.innerHTML.length > 2000) {
-                el.innerHTML = el.innerHTML.substring(0, 2000);
-            }
-        }
+    var statusEl = document.getElementById('notifStatus');
+    var enableBtn = document.getElementById('enableBtn');
+    var testBtn = document.getElementById('testBtn');
+    
+    // Check if Notification API exists
+    if (!('Notification' in window)) {
+        log('Notification API NOT available');
+        statusEl.textContent = '❌ Notifications not supported on this browser';
+        statusEl.className = 'notif-status denied';
+        enableBtn.disabled = true;
+        testBtn.disabled = true;
+        return;
     }
+    
+    log('Notification API available');
+    log('Current permission: ' + Notification.permission);
+    
+    // Update UI based on current permission
+    updateNotificationUI();
+}
 
-    // ===== TOAST =====
-    function toast(msg, type) {
-        var div = document.createElement('div');
-        div.className = 'toast ' + (type || 'info');
-        div.textContent = msg;
-        document.getElementById('toasts').appendChild(div);
-        setTimeout(function() { div.remove(); }, 3500);
+function updateNotificationUI() {
+    var statusEl = document.getElementById('notifStatus');
+    var enableBtn = document.getElementById('enableBtn');
+    var permission = Notification.permission;
+    
+    if (permission === 'granted') {
+        statusEl.textContent = '✅ Notifications enabled! You will receive alerts.';
+        statusEl.className = 'notif-status granted';
+        enableBtn.textContent = '✓ Already Enabled';
+        enableBtn.disabled = true;
+    } else if (permission === 'denied') {
+        statusEl.textContent = '❌ Notifications blocked. Please enable in browser settings.';
+        statusEl.className = 'notif-status denied';
+        enableBtn.textContent = 'Blocked by Browser';
+        enableBtn.disabled = true;
+    } else {
+        statusEl.textContent = '⚠️ Click button below to enable alerts';
+        statusEl.className = 'notif-status default';
+        enableBtn.textContent = 'Enable Notifications';
+        enableBtn.disabled = false;
     }
+}
 
-    // ===== FIREBASE MESSAGING =====
-    function initFirebase() {
-        log('Initializing Firebase...');
-        
-        try {
-            // Check if Firebase is loaded
-            if (typeof firebase === 'undefined') {
-                log('Firebase not loaded, retrying...');
-                setTimeout(initFirebase, 1000);
-                return;
+function enableNotifications() {
+    log('Enable button clicked');
+    
+    var btn = document.getElementById('enableBtn');
+    btn.textContent = 'Requesting...';
+    btn.disabled = true;
+    
+    // Request permission
+    Notification.requestPermission()
+        .then(function(permission) {
+            log('Permission result: ' + permission);
+            updateNotificationUI();
+            
+            if (permission === 'granted') {
+                log('Permission granted!');
+                // Show a welcome notification
+                showNotification('🎉 Notifications Enabled!', 'You will now receive temperature alerts.');
             }
-            
-            // Initialize Firebase
-            if (!firebase.apps.length) {
-                firebase.initializeApp(FIREBASE_CONFIG);
-            }
-            
-            log('Firebase initialized');
-            
-            // Check if messaging is supported
-            if (!firebase.messaging.isSupported()) {
-                log('❌ Firebase Messaging not supported on this browser');
-                document.getElementById('notifStatus').textContent = 'Not supported on this browser';
-                return;
-            }
-            
-            messaging = firebase.messaging();
-            log('✅ Firebase Messaging ready');
-            
-            // Register service worker
-            registerServiceWorker();
-            
-            // Handle foreground messages
-            messaging.onMessage(function(payload) {
-                log('📨 Foreground message: ' + JSON.stringify(payload));
-                
-                var title = payload.notification?.title || 'Pharmacy Alert';
-                var body = payload.notification?.body || 'Check temperatures';
-                
-                toast(title + ': ' + body, 'info');
-                
-                // Also show browser notification
-                if (Notification.permission === 'granted') {
-                    new Notification(title, {
-                        body: body,
-                        icon: '/icon-192.png'
-                    });
-                }
-            });
-            
-            updateNotifUI();
-            
-        } catch (e) {
-            log('❌ Firebase error: ' + e.message);
-        }
-    }
-
-    function registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/firebase-messaging-sw.js')
-                .then(function(registration) {
-                    log('✅ Service Worker registered');
-                    messaging.useServiceWorker(registration);
-                })
-                .catch(function(e) {
-                    log('SW registration error: ' + e.message);
-                });
-        } else {
-            log('Service Workers not supported');
-        }
-    }
-
-    function updateNotifUI() {
-        var icon = document.getElementById('notifIcon');
-        var status = document.getElementById('notifStatus');
-        var btn = document.getElementById('subBtn');
-        
-        if (!messaging) {
-            status.textContent = 'Initializing...';
-            return;
-        }
-        
-        var perm = Notification.permission;
-        log('Notification permission: ' + perm);
-        
-        if (perm === 'granted' && fcmToken) {
-            icon.className = 'notif-icon ok';
-            icon.textContent = '✅';
-            status.textContent = 'Subscribed!';
-            status.style.color = '#22c55e';
-            btn.textContent = '✓ Done';
-            btn.disabled = true;
-        } else if (perm === 'denied') {
-            icon.className = 'notif-icon err';
-            icon.textContent = '🚫';
-            status.textContent = 'Blocked - Enable in settings';
-            status.style.color = '#ef4444';
-            btn.textContent = 'Blocked';
-            btn.disabled = true;
-        } else {
-            status.textContent = 'Click Subscribe for alerts';
-            status.style.color = '#f59e0b';
+        })
+        .catch(function(error) {
+            log('Permission error: ' + error);
+            btn.textContent = 'Error - Try Again';
             btn.disabled = false;
-        }
-    }
-
-    function subscribePush() {
-        log('Subscribe clicked...');
-        
-        if (!messaging) {
-            toast('Firebase not ready, please wait', 'error');
-            return;
-        }
-        
-        // Request permission
-        Notification.requestPermission().then(function(permission) {
-            log('Permission: ' + permission);
-            
-            if (permission !== 'granted') {
-                toast('Permission denied', 'error');
-                updateNotifUI();
-                return;
-            }
-            
-            // Get FCM token
-            log('Getting FCM token...');
-            
-            messaging.getToken({ vapidKey: VAPID_KEY })
-                .then(function(token) {
-                    if (token) {
-                        fcmToken = token;
-                        log('✅ FCM Token: ' + token.substring(0, 20) + '...');
-                        toast('Subscribed! 🎉', 'success');
-                        
-                        // Save token to database for server-side notifications
-                        saveTokenToDatabase(token);
-                        
-                        updateNotifUI();
-                    } else {
-                        log('No token received');
-                        toast('Could not get token', 'error');
-                    }
-                })
-                .catch(function(e) {
-                    log('❌ Token error: ' + e.message);
-                    toast('Error: ' + e.message, 'error');
-                });
-                
-        }).catch(function(e) {
-            log('Permission error: ' + e.message);
         });
-    }
+}
 
-    function saveTokenToDatabase(token) {
-        // Save FCM token to Supabase for later use
-        log('Saving token to database...');
-        
-        db.from('fcm_tokens')
-            .upsert({
-                token: token,
-                user_email: user ? user.email : 'anonymous',
-                created_at: new Date().toISOString()
-            }, { onConflict: 'token' })
-            .then(function(res) {
-                if (res.error) {
-                    log('Token save error (table may not exist): ' + res.error.message);
-                } else {
-                    log('Token saved to database');
-                }
-            });
+function testNotification() {
+    log('Test button clicked');
+    
+    // Check permission first
+    if (Notification.permission !== 'granted') {
+        log('Permission not granted, requesting...');
+        alert('Please enable notifications first by clicking the Enable button');
+        return;
     }
+    
+    // Show test notification
+    showNotification(
+        '🧪 Test Alert', 
+        'Notifications are working! Time: ' + new Date().toLocaleTimeString()
+    );
+    
+    log('Test notification sent');
+}
 
-    function testPush() {
-        log('Testing push notification...');
-        
-        if (Notification.permission !== 'granted') {
-            toast('Enable notifications first!', 'error');
-            return;
-        }
-        
-        // Show local notification as test
-        var notification = new Notification('🧪 Test Alert', {
-            body: 'Push notifications are working on your device!',
-            icon: '/icon-192.png',
-            vibrate: [200, 100, 200],
-            tag: 'test'
+function showNotification(title, body) {
+    log('Showing notification: ' + title);
+    
+    try {
+        var notification = new Notification(title, {
+            body: body,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌡️</text></svg>',
+            badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
+            tag: 'pharmacy-' + Date.now(),
+            requireInteraction: false
         });
         
         notification.onclick = function() {
+            log('Notification clicked');
             window.focus();
             notification.close();
         };
         
-        toast('Test notification sent!', 'success');
-        log('Test notification displayed');
-    }
-
-    // ===== AUTH =====
-    function demoLogin() {
-        user = { email: 'demo@pharmacy.com' };
-        showApp();
-    }
-
-    function logout() {
-        if (db) db.auth.signOut();
-        user = null;
-        document.getElementById('loginPage').classList.remove('hide');
-        document.getElementById('app').classList.remove('show');
-    }
-
-    function showApp() {
-        document.getElementById('loginPage').classList.add('hide');
-        document.getElementById('app').classList.add('show');
+        notification.onshow = function() {
+            log('Notification displayed successfully');
+        };
         
-        if (user) {
-            document.getElementById('userEmail').textContent = user.email;
+        notification.onerror = function(e) {
+            log('Notification error: ' + e);
+        };
+        
+        // Auto close after 5 seconds
+        setTimeout(function() {
+            notification.close();
+        }, 5000);
+        
+    } catch (e) {
+        log('Notification exception: ' + e.message);
+        alert('Notification error: ' + e.message);
+    }
+}
+
+// ============================================
+// DATA FUNCTIONS
+// ============================================
+var supabaseClient = null;
+
+function initSupabase() {
+    log('Initializing Supabase...');
+    
+    // Simple fetch-based approach (no library needed)
+    loadCurrentReading();
+    loadHistory();
+    
+    // Refresh every 30 seconds
+    setInterval(function() {
+        loadCurrentReading();
+    }, 30000);
+    
+    document.getElementById('connection').textContent = 'Connected';
+    document.getElementById('connection').style.color = '#22c55e';
+}
+
+function loadCurrentReading() {
+    var url = SUPABASE_URL + '/rest/v1/temperature_readings?order=timestamp.desc&limit=1';
+    
+    fetch(url, {
+        headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
         }
-        
-        loadData();
-        initFirebase();
-    }
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data && data.length > 0) {
+            updateTemperatureDisplay(data[0]);
+        }
+    })
+    .catch(function(error) {
+        log('Error loading data: ' + error);
+        document.getElementById('connection').textContent = 'Error';
+        document.getElementById('connection').style.color = '#ef4444';
+    });
+}
 
-    document.getElementById('loginForm').onsubmit = function(e) {
-        e.preventDefault();
-        var email = document.getElementById('emailInput').value;
-        var pass = document.getElementById('passInput').value;
-        var errBox = document.getElementById('loginError');
-        
-        errBox.classList.remove('show');
-        
-        db.auth.signInWithPassword({ email: email, password: pass })
-            .then(function(res) {
-                if (res.error) throw res.error;
-                user = res.data.user;
-                showApp();
-            })
-            .catch(function(err) {
-                errBox.textContent = err.message;
-                errBox.classList.add('show');
-            });
-    };
-
-    // ===== DATA =====
-    function loadData() {
-        log('Loading data...');
-        
-        // Load current reading
-        db.from('temperature_readings')
-            .select('*')
-            .order('timestamp', { ascending: false })
-            .limit(1)
-            .single()
-            .then(function(res) {
-                if (res.data) {
-                    updateUI(res.data);
-                    document.getElementById('liveDot').classList.add('on');
-                    document.getElementById('liveText').textContent = 'Live';
-                }
-            })
-            .catch(function(e) {
-                log('Data error: ' + e.message);
-            });
-        
-        // Load total count
-        db.from('temperature_readings')
-            .select('*', { count: 'exact', head: true })
-            .then(function(res) {
-                document.getElementById('totalCount').textContent = res.count || 0;
-            });
-        
-        // Load today's alerts
-        var today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        db.from('temperature_readings')
-            .select('ambient_alert, freezer_alert')
-            .gte('timestamp', today.toISOString())
-            .then(function(res) {
-                if (res.data) {
-                    var alerts = res.data.filter(function(r) {
-                        return r.ambient_alert || r.freezer_alert;
-                    }).length;
-                    document.getElementById('alertsToday').textContent = alerts;
-                    document.getElementById('alertsToday').style.color = alerts > 0 ? '#ef4444' : '#22c55e';
-                }
-            });
-        
-        loadTable();
-        setupRealtime();
-    }
-
-    function updateUI(r) {
-        var amb = parseFloat(r.ambient_temp);
-        var fri = parseFloat(r.freezer_temp);
-        var ambBad = amb < AMBIENT_MIN || amb > AMBIENT_MAX;
-        var friBad = fri < FRIDGE_MIN || fri > FRIDGE_MAX;
-        
-        document.getElementById('ambientTemp').textContent = amb.toFixed(1) + '°C';
-        document.getElementById('ambientTemp').className = 'temp ' + (ambBad ? 'bad' : 'ok');
-        document.getElementById('ambientCard').className = 'card' + (ambBad ? ' alert' : '');
-        
-        document.getElementById('fridgeTemp').textContent = fri.toFixed(1) + '°C';
-        document.getElementById('fridgeTemp').className = 'temp ' + (friBad ? 'bad' : 'ok');
-        document.getElementById('fridgeCard').className = 'card' + (friBad ? ' alert' : '');
-        
-        document.getElementById('lastUpdate').textContent = new Date(r.timestamp).toLocaleTimeString();
-        document.getElementById('wifi').textContent = (r.wifi_rssi || '--') + ' dBm';
-    }
-
-    function loadTable() {
-        db.from('temperature_readings')
-            .select('*')
-            .order('timestamp', { ascending: false })
-            .limit(8)
-            .then(function(res) {
-                var tbody = document.getElementById('tableBody');
-                
-                if (!res.data || res.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#666;">No data</td></tr>';
-                    return;
-                }
-                
-                tbody.innerHTML = res.data.map(function(r) {
-                    var bad = r.ambient_alert || r.freezer_alert;
-                    return '<tr>' +
-                        '<td>' + new Date(r.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) + '</td>' +
-                        '<td style="color:' + (r.ambient_alert ? '#ef4444' : '#4cc9f0') + '">' + parseFloat(r.ambient_temp).toFixed(1) + '°</td>' +
-                        '<td style="color:' + (r.freezer_alert ? '#ef4444' : '#4361ee') + '">' + parseFloat(r.freezer_temp).toFixed(1) + '°</td>' +
-                        '<td><span class="badge ' + (bad ? 'bad' : 'ok') + '">' + (bad ? '⚠️' : '✓') + '</span></td>' +
-                        '</tr>';
-                }).join('');
-            });
-    }
-
-    function setupRealtime() {
-        log('Setting up realtime...');
-        
-        db.channel('readings')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'temperature_readings' }, function(payload) {
-                log('New reading received');
-                updateUI(payload.new);
-                loadTable();
-                
-                // Show notification if alert
-                var r = payload.new;
-                if (r.ambient_alert || r.freezer_alert) {
-                    showAlertNotification(r);
-                }
-            })
-            .subscribe(function(status) {
-                log('Realtime status: ' + status);
-            });
-    }
-
-    function showAlertNotification(r) {
-        var msg = '';
-        if (r.ambient_alert) msg += 'Ambient: ' + parseFloat(r.ambient_temp).toFixed(1) + '°C ';
-        if (r.freezer_alert) msg += 'Fridge: ' + parseFloat(r.freezer_temp).toFixed(1) + '°C';
-        
-        log('🚨 Alert: ' + msg);
-        toast('🚨 ' + msg, 'error');
-        
-        // Show browser notification if permitted
+function updateTemperatureDisplay(reading) {
+    var ambient = parseFloat(reading.ambient_temp);
+    var fridge = parseFloat(reading.freezer_temp);
+    
+    var ambientEl = document.getElementById('ambientTemp');
+    var fridgeEl = document.getElementById('fridgeTemp');
+    
+    ambientEl.textContent = ambient.toFixed(1) + '°C';
+    fridgeEl.textContent = fridge.toFixed(1) + '°C';
+    
+    // Check if in range
+    var ambientOk = ambient >= AMBIENT_MIN && ambient <= AMBIENT_MAX;
+    var fridgeOk = fridge >= FRIDGE_MIN && fridge <= FRIDGE_MAX;
+    
+    ambientEl.className = 'temp-value ' + (ambientOk ? 'ok' : 'bad');
+    fridgeEl.className = 'temp-value ' + (fridgeOk ? 'ok' : 'bad');
+    
+    // Update timestamp
+    var time = new Date(reading.timestamp);
+    document.getElementById('lastUpdate').textContent = time.toLocaleTimeString();
+    
+    // Show alert if out of range
+    if (!ambientOk || !fridgeOk) {
         if (Notification.permission === 'granted') {
-            new Notification('🚨 Temperature Alert!', {
-                body: msg,
-                icon: '/icon-192.png',
-                vibrate: [200, 100, 200, 100, 200],
-                tag: 'temp-alert',
-                requireInteraction: true
-            });
+            var msg = '';
+            if (!ambientOk) msg += 'Ambient: ' + ambient.toFixed(1) + '°C ';
+            if (!fridgeOk) msg += 'Fridge: ' + fridge.toFixed(1) + '°C';
+            showNotification('🚨 Temperature Alert!', msg);
         }
     }
+}
 
-    // ===== INIT =====
-    function init() {
-        try {
-            log('Starting app...');
-            document.getElementById('loadingText').textContent = 'Connecting...';
-            
-            // Wait for Supabase to load
-            if (typeof supabase === 'undefined') {
-                log('Waiting for Supabase...');
-                setTimeout(init, 500);
-                return;
-            }
-            
-            // Initialize Supabase
-            db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            log('Supabase connected');
-            
-            // Check existing session
-            db.auth.getSession().then(function(res) {
-                if (res.data && res.data.session) {
-                    user = res.data.session.user;
-                    showApp();
-                }
-                document.getElementById('loading').classList.add('hide');
-                log('App ready');
-            });
-            
-        } catch (e) {
-            log('Init error: ' + e.message);
-            document.getElementById('loadingText').textContent = 'Error: ' + e.message;
+function loadHistory() {
+    var url = SUPABASE_URL + '/rest/v1/temperature_readings?order=timestamp.desc&limit=10';
+    
+    fetch(url, {
+        headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY
         }
-    }
-
-    // Start when DOM ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-    // Retry after delay if needed
-    setTimeout(function() {
-        if (!db) {
-            log('Retrying init...');
-            init();
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        var tbody = document.getElementById('historyTable');
+        
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">No data</td></tr>';
+            return;
         }
-    }, 2000);
-    </script>
+        
+        var html = '';
+        var alertCount = 0;
+        
+        for (var i = 0; i < data.length; i++) {
+            var r = data[i];
+            var ambient = parseFloat(r.ambient_temp);
+            var fridge = parseFloat(r.freezer_temp);
+            var time = new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            
+            var ambientOk = ambient >= AMBIENT_MIN && ambient <= AMBIENT_MAX;
+            var fridgeOk = fridge >= FRIDGE_MIN && fridge <= FRIDGE_MAX;
+            var rowOk = ambientOk && fridgeOk;
+            
+            if (!rowOk) alertCount++;
+            
+            html += '<tr>';
+            html += '<td>' + time + '</td>';
+            html += '<td style="color:' + (ambientOk ? '#4cc9f0' : '#ef4444') + '">' + ambient.toFixed(1) + '°</td>';
+            html += '<td style="color:' + (fridgeOk ? '#4361ee' : '#ef4444') + '">' + fridge.toFixed(1) + '°</td>';
+            html += '<td><span class="badge ' + (rowOk ? 'ok' : 'bad') + '">' + (rowOk ? '✓ OK' : '⚠️') + '</span></td>';
+            html += '</tr>';
+        }
+        
+        tbody.innerHTML = html;
+        document.getElementById('alertCount').textContent = alertCount;
+        document.getElementById('alertCount').style.color = alertCount > 0 ? '#ef4444' : '#22c55e';
+    })
+    .catch(function(error) {
+        log('Error loading history: ' + error);
+    });
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+function init() {
+    log('App starting...');
+    log('User Agent: ' + navigator.userAgent.substring(0, 50));
+    
+    // Check notifications
+    checkNotificationSupport();
+    
+    // Load data
+    initSupabase();
+    
+    log('App initialized');
+}
+
+// Start when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+</script>
+
 </body>
 </html>
