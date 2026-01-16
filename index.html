@@ -19,26 +19,21 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: #fff; line-height: 1.5; }
         
-        /* Layout */
         header { background: #101018; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
         main { padding: 12px; max-width: 800px; margin: 0 auto; }
         
-        /* Components */
         .card { background: var(--card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 12px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         
-        /* Typography */
         .temp-val { font-size: 32px; font-weight: 700; font-family: monospace; }
         .ok { color: var(--success); }
         .warn { color: var(--danger); }
         
-        /* Chart Controls */
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .chart-btns { display: flex; background: var(--bg); padding: 4px; border-radius: 8px; gap: 4px; }
         .chart-btns button { background: transparent; border: none; color: #888; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .chart-btns button.active { background: var(--primary); color: white; }
         
-        /* Buttons */
         .btn { padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 14px; }
         .btn-p { background: var(--primary); color: white; width: 100%; }
         
@@ -52,21 +47,21 @@
 </head>
 <body>
 
-    <div id="loading"><div>🔄 Loading...</div></div>
+    <div id="loading"><div>🔄 Connecting to Omnisense...</div></div>
 
     <div id="app">
         <header>
             <div><strong>Omnisense</strong><small style="display:block; color:#666">Pharmacy Monitor</small></div>
-            <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:12px">Logout</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:var(--primary); font-size:12px">Refresh</button>
         </header>
 
         <main>
             <div class="grid">
-                <div class="card" id="ambCard">
+                <div class="card">
                     <p style="color:#888; font-size:12px">🏠 AMBIENT</p>
                     <div class="temp-val" id="ambVal">--.-°C</div>
                 </div>
-                <div class="card" id="friCard">
+                <div class="card">
                     <p style="color:#888; font-size:12px">🧊 FRIDGE</p>
                     <div class="temp-val" id="friVal">--.-°C</div>
                 </div>
@@ -77,7 +72,7 @@
                     <span>Push Notifications</span>
                     <button class="btn btn-p" id="subBtn" style="width:auto" onclick="subscribePush()">Enable</button>
                 </div>
-                <div id="notifMsg" style="font-size:11px; color:#888">Click enable to receive phone alerts.</div>
+                <div id="notifMsg" style="font-size:11px; color:#888">Click enable to receive pharmacy alerts.</div>
             </div>
 
             <div class="card">
@@ -92,241 +87,25 @@
                 <canvas id="tempChart"></canvas>
             </div>
             
-            <div class="card" style="font-family:monospace; font-size:10px; color:#555; height:60px; overflow-y:auto" id="logBox">
-                Initializing logs...
+            <div class="card" style="font-family:monospace; font-size:10px; color:#555; height:80px; overflow-y:auto" id="logBox">
+                Initializing System...
             </div>
         </main>
     </div>
 
     <script>
-        // CONFIG
-        const S_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
-        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
-        const F_CONFIG = {
-            apiKey: "AIzaSyAqYKrGCKupCxfH5w4vIpEYnhYyb0azSmw",
-            authDomain: "pharmacy-monitor-2307f.firebaseapp.com",
-            projectId: "pharmacy-monitor-2307f",
-            storageBucket: "pharmacy-monitor-2307f.firebasestorage.app",
-            messagingSenderId: "525242127430",
-            appId: "1:525242127430:web:c258994af86e35b0456647"
-        };
-
-        let db, chart, currentRange = 'day';
-
-        function addLog(m) {
-            const lb = document.getElementById('logBox');
-            lb.innerHTML = `> ${m}<br>${lb.innerHTML}`;
-        }
-
-        // --- CHART LOGIC ---
-        function initChart() {
-            const ctx = document.getElementById('tempChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: [], datasets: [
-                    { label: 'Ambient', borderColor: '#4cc9f0', data: [], tension: 0.3, pointRadius: 0 },
-                    { label: 'Fridge', borderColor: '#4361ee', data: [], tension: 0.3, pointRadius: 0 }
-                ]},
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: '#252535' }, ticks: { color: '#888' } },
-                        x: { grid: { display: false }, ticks: { color: '#888', maxRotation: 0 } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        async function fetchHistory(range) {
-            let limit = 24; // Default day
-            if(range === 'week') limit = 168;
-            if(range === 'month') limit = 720;
-
-            const { data, error } = await db.from('temperature_readings')
-                .select('timestamp, ambient_temp, freezer_temp')
-                .order('timestamp', { ascending: false })
-                .limit(limit);
-
-            if (data) {
-                const reversed = data.reverse();
-                chart.data.labels = reversed.map(r => new Date(r.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
-                chart.data.datasets[0].data = reversed.map(r => r.ambient_temp);
-                chart.data.datasets[1].data = reversed.map(r => r.freezer_temp);
-                chart.update();
+        // CONFIGURATION - Defined once to avoid Identifier Errors
+        const CONFIG = {
+            S_URL: 'https://avxakvxjgpwzctuagaww.supabase.co',
+            S_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo',
+            F_CONFIG: {
+                apiKey: "AIzaSyAqYKrGCKupCxfH5w4vIpEYnhYyb0azSmw",
+                authDomain: "pharmacy-monitor-2307f.firebaseapp.com",
+                projectId: "pharmacy-monitor-2307f",
+                storageBucket: "pharmacy-monitor-2307f.firebasestorage.app",
+                messagingSenderId: "525242127430",
+                appId: "1:525242127430:web:c258994af86e35b0456647"
             }
-        }
-
-        function updateRange(range) {
-            currentRange = range;
-            ['day', 'week', 'month'].forEach(r => document.getElementById('btn' + r.charAt(0).toUpperCase() + r.slice(1)).classList.remove('active'));
-            document.getElementById('btn' + range.charAt(0).toUpperCase() + range.slice(1)).classList.add('active');
-            fetchHistory(range);
-        }
-
-        // --- FIREBASE PUSH ---
-        function initFirebase() {
-            if (!firebase.messaging.isSupported()) {
-                addLog("FCM not supported on this browser");
-                return;
-            }
-            firebase.initializeApp(F_CONFIG);
-            const messaging = firebase.messaging();
-            
-            messaging.onMessage((payload) => {
-                addLog("Message received: " + payload.notification.title);
-                new Notification(payload.notification.title, { body: payload.notification.body });
-            });
-        }
-
-        async function subscribePush() {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                const messaging = firebase.messaging();
-                const token = await messaging.getToken({ vapidKey: 'BCXgZy1ydjIHfjif1l0ktbMRHkY8lBipHu9vaW8ETWOztov7PfljN_dgSXRyihT73SrQo9lV1PRO9a74kCXb3rk' });
-                addLog("FCM Token Generated");
-                document.getElementById('subBtn').innerText = "Enabled ✓";
-                document.getElementById('notifMsg').innerText = "Notifications active.";
-            }
-        }
-
-        // --- APP START ---
-        async function start() {
-            db = supabase.createClient(S_URL, S_KEY);
-            initChart();
-            initFirebase();
-            
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-
-            // Realtime Update
-            db.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'temperature_readings' }, payload => {
-                const r = payload.new;
-                document.getElementById('ambVal').innerText = r.ambient_temp.toFixed(1) + '°C';
-                document.getElementById('friVal').innerText = r.freezer_temp.toFixed(1) + '°C';
-                addLog("Live Update: " + r.ambient_temp + "°C");
-                if (currentRange === 'day') fetchHistory('day');
-            }).subscribe();
-
-            updateRange('day');
-        }
-
-        start();
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0a0a0f">
-    <title>Omnisense | Pharmacy Monitor</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon-192.png">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
-    
-    <style>
-        :root { --primary: #4361ee; --danger: #ef4444; --success: #22c55e; --bg: #0a0a0f; --card: #151520; --border: #252535; }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: #fff; line-height: 1.5; }
-        
-        /* Layout */
-        header { background: #101018; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        main { padding: 12px; max-width: 800px; margin: 0 auto; }
-        
-        /* Components */
-        .card { background: var(--card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 12px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        
-        /* Typography */
-        .temp-val { font-size: 32px; font-weight: 700; font-family: monospace; }
-        .ok { color: var(--success); }
-        .warn { color: var(--danger); }
-        
-        /* Chart Controls */
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .chart-btns { display: flex; background: var(--bg); padding: 4px; border-radius: 8px; gap: 4px; }
-        .chart-btns button { background: transparent; border: none; color: #888; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s; }
-        .chart-btns button.active { background: var(--primary); color: white; }
-        
-        /* Buttons */
-        .btn { padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 14px; }
-        .btn-p { background: var(--primary); color: white; width: 100%; }
-        
-        #loading { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        #app { display: none; }
-        
-        canvas { width: 100% !important; height: 250px !important; }
-        
-        @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
-    </style>
-</head>
-<body>
-
-    <div id="loading"><div>🔄 Loading...</div></div>
-
-    <div id="app">
-        <header>
-            <div><strong>Omnisense</strong><small style="display:block; color:#666">Pharmacy Monitor</small></div>
-            <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:12px">Logout</button>
-        </header>
-
-        <main>
-            <div class="grid">
-                <div class="card" id="ambCard">
-                    <p style="color:#888; font-size:12px">🏠 AMBIENT</p>
-                    <div class="temp-val" id="ambVal">--.-°C</div>
-                </div>
-                <div class="card" id="friCard">
-                    <p style="color:#888; font-size:12px">🧊 FRIDGE</p>
-                    <div class="temp-val" id="friVal">--.-°C</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-                    <span>Push Notifications</span>
-                    <button class="btn btn-p" id="subBtn" style="width:auto" onclick="subscribePush()">Enable</button>
-                </div>
-                <div id="notifMsg" style="font-size:11px; color:#888">Click enable to receive phone alerts.</div>
-            </div>
-
-            <div class="card">
-                <div class="chart-header">
-                    <span style="font-size:14px; font-weight:600">Temperature History</span>
-                    <div class="chart-btns">
-                        <button onclick="updateRange('day')" id="btnDay" class="active">Day</button>
-                        <button onclick="updateRange('week')" id="btnWeek">Week</button>
-                        <button onclick="updateRange('month')" id="btnMonth">Month</button>
-                    </div>
-                </div>
-                <canvas id="tempChart"></canvas>
-            </div>
-            
-            <div class="card" style="font-family:monospace; font-size:10px; color:#555; height:60px; overflow-y:auto" id="logBox">
-                Initializing logs...
-            </div>
-        </main>
-    </div>
-
-    <script>
-       <script>
-        // CONFIG - ONLY ONE DECLARATION ALLOWED
-        const S_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
-        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
-        const F_CONFIG = {
-            apiKey: "AIzaSyAqYKrGCKupCxfH5w4vIpEYnhYyb0azSmw",
-            authDomain: "pharmacy-monitor-2307f.firebaseapp.com",
-            projectId: "pharmacy-monitor-2307f",
-            storageBucket: "pharmacy-monitor-2307f.firebasestorage.app",
-            messagingSenderId: "525242127430",
-            appId: "1:525242127430:web:c258994af86e35b0456647"
         };
 
         let db, chart, currentRange = 'day';
@@ -336,7 +115,7 @@
             if(lb) lb.innerHTML = `> ${m}<br>${lb.innerHTML}`;
         }
 
-        // --- CHART LOGIC ---
+        // --- CHARTING ---
         function initChart() {
             const ctx = document.getElementById('tempChart').getContext('2d');
             chart = new Chart(ctx, {
@@ -387,21 +166,20 @@
             fetchHistory(range);
         }
 
-        // --- FIREBASE PUSH ---
+        // --- FIREBASE ---
         function initFirebase() {
-            if (!firebase.messaging.isSupported()) {
-                addLog("FCM not supported on this browser");
-                return;
-            }
-            if (!firebase.apps.length) {
-                firebase.initializeApp(F_CONFIG);
-            }
-            const messaging = firebase.messaging();
-            
-            messaging.onMessage((payload) => {
-                addLog("Message received: " + payload.notification.title);
-                new Notification(payload.notification.title, { body: payload.notification.body });
-            });
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(CONFIG.F_CONFIG);
+                }
+                if (firebase.messaging.isSupported()) {
+                    const messaging = firebase.messaging();
+                    messaging.onMessage((payload) => {
+                        addLog("Alert: " + payload.notification.title);
+                        new Notification(payload.notification.title, { body: payload.notification.body });
+                    });
+                }
+            } catch (e) { addLog("Firebase init skip: " + e.message); }
         }
 
         async function subscribePush() {
@@ -410,23 +188,23 @@
                 if (permission === 'granted') {
                     const messaging = firebase.messaging();
                     const token = await messaging.getToken({ vapidKey: 'BCXgZy1ydjIHfjif1l0ktbMRHkY8lBipHu9vaW8ETWOztov7PfljN_dgSXRyihT73SrQo9lV1PRO9a74kCXb3rk' });
-                    addLog("FCM Token Generated");
-                    document.getElementById('subBtn').innerText = "Enabled ✓";
+                    addLog("Notifications Connected");
+                    document.getElementById('subBtn').innerText = "Active ✓";
                 }
-            } catch (err) {
-                addLog("Push Error: " + err.message);
-            }
+            } catch (err) { addLog("Push Error: Check if using HTTPS"); }
         }
 
+        // --- BOOTSTRAP ---
         async function start() {
             try {
-                db = supabase.createClient(S_URL, S_KEY);
+                db = supabase.createClient(CONFIG.S_URL, CONFIG.S_KEY);
                 initChart();
                 initFirebase();
                 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
 
+                // Setup Realtime listener
                 db.channel('any').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'temperature_readings' }, payload => {
                     const r = payload.new;
                     document.getElementById('ambVal').innerText = r.ambient_temp.toFixed(1) + '°C';
@@ -435,10 +213,13 @@
                 }).subscribe();
 
                 updateRange('day');
+                addLog("System Online");
             } catch (e) {
-                addLog("Start error: " + e.message);
+                document.getElementById('loading').innerText = "Critical Error: " + e.message;
             }
         }
 
         start();
     </script>
+</body>
+</html>
