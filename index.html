@@ -1,577 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacy Monitor</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0f;
-            color: #fff;
-            min-height: 100vh;
-            padding: 15px;
-        }
-        
-        .header {
-            text-align: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #333;
-            margin-bottom: 20px;
-        }
-        
-        .header h1 { font-size: 22px; margin-bottom: 5px; }
-        .header p { color: #888; font-size: 13px; }
-        
-        .card {
-            background: #151520;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 15px;
-            border: 1px solid #252535;
-        }
-        
-        .card h2 {
-            font-size: 14px;
-            margin-bottom: 12px;
-            color: #4cc9f0;
-        }
-        
-        .temps {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        
-        .temp-box {
-            background: #0a0a0f;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .temp-label {
-            font-size: 11px;
-            color: #888;
-            margin-bottom: 5px;
-        }
-        
-        .temp-value {
-            font-size: 28px;
-            font-weight: bold;
-            font-family: monospace;
-        }
-        
-        .temp-value.ok { color: #22c55e; }
-        .temp-value.bad { color: #ef4444; }
-        
-        .status-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #252535;
-            font-size: 13px;
-        }
-        
-        .status-row:last-child { border-bottom: none; }
-        .status-row .label { color: #888; }
-        
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #4361ee, #4cc9f0);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: #252535;
-            color: white;
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .notif-status {
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            font-size: 13px;
-        }
-        
-        .notif-status.granted {
-            background: rgba(34, 197, 94, 0.15);
-            color: #22c55e;
-        }
-        
-        .notif-status.denied {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-        }
-        
-        .notif-status.default {
-            background: rgba(245, 158, 11, 0.15);
-            color: #f59e0b;
-        }
-        
-        .log {
-            background: #0a0a0f;
-            border-radius: 8px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 10px;
-            color: #888;
-            max-height: 150px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-        
-        th, td {
-            padding: 10px 6px;
-            text-align: left;
-            border-bottom: 1px solid #252535;
-        }
-        
-        th {
-            color: #888;
-            font-size: 10px;
-            text-transform: uppercase;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 600;
-        }
-        
-        .badge.ok { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
-        .badge.bad { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-        
-        .live-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #22c55e;
-            border-radius: 50%;
-            margin-right: 6px;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <title>Pharmacy Monitor</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: #0a0a0f; color: #fff; min-height: 100vh; }
+    a { color: #4cc9f0; }
+
+    .wrap { max-width: 980px; margin: 0 auto; padding: 14px; }
+
+    .loading { position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; background:#0a0a0f; z-index: 9999; }
+    .loading.hide { display:none; }
+    .spinner { width: 44px; height: 44px; border: 4px solid #222; border-top-color: #4361ee; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .card { background: #151520; border: 1px solid #252535; border-radius: 14px; padding: 14px; }
+    .row { display:flex; gap: 12px; flex-wrap: wrap; }
+    .grow { flex: 1 1 260px; }
+    .btn { border: 0; border-radius: 10px; padding: 12px 12px; font-weight: 650; cursor: pointer; }
+    .btnP { background: linear-gradient(135deg, #4361ee, #4cc9f0); color: #fff; }
+    .btnS { background: #252535; color: #fff; }
+    .btnD { background: #ef4444; color: #fff; }
+
+    header { position: sticky; top: 0; background: #101018; border-bottom: 1px solid #252535; z-index: 100; }
+    header .bar { display:flex; align-items:center; justify-content:space-between; padding: 10px 14px; max-width: 980px; margin: 0 auto; }
+    .brand { display:flex; align-items:center; gap: 10px; }
+    .brand img { width: 34px; height: 34px; border-radius: 10px; }
+    .brand .t { line-height: 1.1; }
+    .brand .t strong { font-size: 14px; display:block; }
+    .brand .t small { color: #8b8b9a; font-size: 11px; display:block; }
+    .status { display:flex; align-items:center; gap: 8px; font-size: 12px; color:#c9c9d6; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background:#ef4444; }
+    .dot.on { background:#22c55e; }
+
+    .grid2 { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 520px) { .grid2 { grid-template-columns: 1fr; } }
+
+    .k { color:#8b8b9a; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .temp { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 34px; font-weight: 800; }
+    .ok { color:#22c55e; }
+    .bad { color:#ef4444; }
+
+    .info { margin-top: 10px; }
+    .info .line { display:flex; justify-content:space-between; padding: 8px 0; border-bottom: 1px solid #252535; font-size: 13px; }
+    .info .line:last-child { border-bottom: 0; }
+
+    .tabs { display:flex; gap: 8px; }
+    .tab { padding: 10px 12px; border-radius: 10px; border: 1px solid #252535; background:#0a0a0f; color:#c9c9d6; cursor:pointer; font-size: 12px; }
+    .tab.on { background:#4361ee; border-color:#4361ee; color:#fff; }
+
+    table { width:100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid #252535; text-align:left; }
+    th { color:#8b8b9a; font-size: 10px; text-transform: uppercase; }
+    .badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+    .bOk { background: rgba(34,197,94,0.15); color:#22c55e; }
+    .bBad { background: rgba(239,68,68,0.15); color:#ef4444; }
+
+    .toastBox { position: fixed; top: 62px; right: 10px; z-index: 9998; }
+    .toast { background:#151520; border:1px solid #252535; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; font-size: 12px; max-width: 280px; }
+    .toast.ok { border-left: 3px solid #22c55e; }
+    .toast.err { border-left: 3px solid #ef4444; }
+    .toast.inf { border-left: 3px solid #4361ee; }
+
+    .login { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; padding: 16px; background:#0a0a0f; z-index: 2000; }
+    .login.hide { display:none; }
+    .login .box { width: 100%; max-width: 380px; }
+    .in { width:100%; padding: 12px 12px; border-radius: 10px; border:1px solid #252535; background:#0a0a0f; color:#fff; font-size: 15px; }
+    .errBox { display:none; margin-bottom: 10px; padding: 10px; border-radius: 10px; border:1px solid #ef4444; background: rgba(239,68,68,0.10); color:#ef4444; font-size: 12px; }
+    .errBox.show { display:block; }
+
+    .debug { margin-top: 10px; background:#0a0a0f; border:1px solid #252535; border-radius: 10px; padding: 10px; color:#9a9ab0; font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; max-height: 90px; overflow:auto; word-break: break-all; }
+  </style>
 </head>
+
 <body>
+  <div class="loading" id="loading"><div class="spinner"></div></div>
+  <div class="toastBox" id="toastBox"></div>
 
-<div class="header">
-    <h1>🌡️ Pharmacy Monitor</h1>
-    <p><span class="live-dot"></span>Live Temperature Monitoring</p>
-</div>
+  <!-- Login -->
+  <div class="login" id="login">
+    <div class="box card">
+      <div style="display:flex; gap:10px; align-items:center; justify-content:center; margin-bottom: 10px;">
+        <img src="/icon-192.png" width="54" height="54" style="border-radius: 14px;" alt="logo">
+      </div>
+      <div style="text-align:center; margin-bottom: 12px;">
+        <div style="font-weight:800; font-size: 18px;">Pharmacy Monitor</div>
+        <div style="color:#8b8b9a; font-size: 12px;">Login to view temperatures</div>
+      </div>
 
-<!-- Notifications Card -->
-<div class="card">
-    <h2>🔔 Notifications</h2>
-    
-    <div class="notif-status default" id="notifStatus">
-        Checking notification support...
-    </div>
-    
-    <button class="btn btn-primary" id="enableBtn" onclick="enableNotifications()">
-        Enable Notifications
-    </button>
-    
-    <button class="btn btn-secondary" id="testBtn" onclick="testNotification()">
-        🧪 Test Notification
-    </button>
-    
-    <div class="log" id="log">Initializing...</div>
-</div>
+      <div class="errBox" id="loginErr"></div>
 
-<!-- Temperature Card -->
-<div class="card">
-    <h2>📊 Current Readings</h2>
-    
-    <div class="temps">
-        <div class="temp-box">
-            <div class="temp-label">🏠 AMBIENT</div>
-            <div class="temp-value ok" id="ambientTemp">--.-°C</div>
+      <form id="loginForm">
+        <div style="margin-bottom:10px;">
+          <div class="k" style="margin-bottom:6px;">Email</div>
+          <input class="in" id="email" type="email" required />
         </div>
-        <div class="temp-box">
-            <div class="temp-label">🧊 FRIDGE</div>
-            <div class="temp-value ok" id="fridgeTemp">--.-°C</div>
+        <div style="margin-bottom:12px;">
+          <div class="k" style="margin-bottom:6px;">Password</div>
+          <input class="in" id="pass" type="password" required />
         </div>
-    </div>
-</div>
+        <button class="btn btnP" style="width:100%;" type="submit">Sign In</button>
+      </form>
 
-<!-- Status Card -->
-<div class="card">
-    <h2>ℹ️ Status</h2>
-    
-    <div class="status-row">
-        <span class="label">Last Update</span>
-        <span id="lastUpdate">--:--</span>
+      <button class="btn btnS" style="width:100%; margin-top:10px;" id="demoBtn" type="button">Demo Login</button>
+      <div style="text-align:center; color:#8b8b9a; font-size: 12px; margin-top:10px;">
+        No signup UI here. Create users inside Supabase Auth.
+      </div>
     </div>
-    <div class="status-row">
-        <span class="label">Connection</span>
-        <span id="connection">Connecting...</span>
-    </div>
-    <div class="status-row">
-        <span class="label">Alerts Today</span>
-        <span id="alertCount">0</span>
-    </div>
-</div>
+  </div>
 
-<!-- History Card -->
-<div class="card">
-    <h2>📋 Recent History</h2>
-    
-    <table>
+  <!-- App -->
+  <header id="hdr" style="display:none;">
+    <div class="bar">
+      <div class="brand">
+        <img src="/icon-192.png" alt="logo" />
+        <div class="t">
+          <strong>Pharmacy Monitor</strong>
+          <small id="userLabel">user</small>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="status"><span class="dot" id="liveDot"></span><span id="liveTxt">Connecting</span></div>
+        <button class="btn btnD" id="logoutBtn" type="button" style="padding:10px 10px; border-radius: 10px;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap" id="app" style="display:none;">
+    <div class="row">
+      <div class="card grow">
+        <div class="k">Push notifications</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top: 8px;">
+          <div>
+            <div style="font-weight:800; font-size: 14px;">Firebase Cloud Messaging</div>
+            <div style="color:#8b8b9a; font-size: 12px;" id="pushState">Initializing</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btnP" id="subBtn" type="button">Subscribe</button>
+            <button class="btn btnS" id="testBtn" type="button">Test</button>
+          </div>
+        </div>
+        <div class="debug" id="debug">Boot</div>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top: 12px;">
+      <div class="card" id="ambCard">
+        <div class="k">Ambient</div>
+        <div class="temp ok" id="ambT">--.-°C</div>
+        <div style="color:#8b8b9a; font-size: 12px;">Range 15 to 25</div>
+      </div>
+      <div class="card" id="friCard">
+        <div class="k">Fridge</div>
+        <div class="temp ok" id="friT">--.-°C</div>
+        <div style="color:#8b8b9a; font-size: 12px;">Range 2 to 8</div>
+      </div>
+    </div>
+
+    <div class="card info" style="margin-top: 12px;">
+      <div class="line"><span style="color:#8b8b9a;">Last update</span><span id="lastUp">--</span></div>
+      <div class="line"><span style="color:#8b8b9a;">WiFi RSSI</span><span id="rssi">--</span></div>
+      <div class="line"><span style="color:#8b8b9a;">Alerts today</span><span id="aToday">0</span></div>
+      <div class="line"><span style="color:#8b8b9a;">Total records</span><span id="tot">--</span></div>
+    </div>
+
+    <div class="card" style="margin-top: 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:900;">History</div>
+          <div style="color:#8b8b9a; font-size: 12px;" id="avgLine">Averages: --</div>
+        </div>
+        <div class="tabs">
+          <button class="tab on" data-p="day" type="button">Day</button>
+          <button class="tab" data-p="week" type="button">Week</button>
+          <button class="tab" data-p="month" type="button">Month</button>
+        </div>
+      </div>
+      <div style="height: 280px; margin-top: 10px;">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 12px;">
+      <div style="font-weight:900; margin-bottom: 10px;">Recent readings</div>
+      <table>
         <thead>
-            <tr>
-                <th>Time</th>
-                <th>Ambient</th>
-                <th>Fridge</th>
-                <th>Status</th>
-            </tr>
+          <tr><th>Time</th><th>Ambient</th><th>Fridge</th><th>Status</th></tr>
         </thead>
-        <tbody id="historyTable">
-            <tr><td colspan="4" style="text-align:center;color:#666;">Loading...</td></tr>
+        <tbody id="tbl">
+          <tr><td colspan="4" style="color:#8b8b9a;">Loading</td></tr>
         </tbody>
-    </table>
-</div>
+      </table>
+    </div>
+  </div>
 
-<script>
-// ============================================
-// CONFIGURATION
-// ============================================
-var SUPABASE_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ2vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
+  <script>
+    // ====== CONFIG ======
+    const SUPABASE_URL = "https://avxakvxjgpwzctuagaww.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo";
 
-var AMBIENT_MIN = 15;
-var AMBIENT_MAX = 25;
-var FRIDGE_MIN = 2;
-var FRIDGE_MAX = 8;
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyAqYKrGCKupCxfH5w4vIpEYnhYyb0azSmw",
+      authDomain: "pharmacy-monitor-2307f.firebaseapp.com",
+      projectId: "pharmacy-monitor-2307f",
+      storageBucket: "pharmacy-monitor-2307f.firebasestorage.app",
+      messagingSenderId: "525242127430",
+      appId: "1:525242127430:web:c258994af86e35b0456647"
+    };
 
-// ============================================
-// LOGGING
-// ============================================
-function log(message) {
-    console.log('[App] ' + message);
-    var logEl = document.getElementById('log');
-    var time = new Date().toLocaleTimeString();
-    logEl.innerHTML = '[' + time + '] ' + message + '\n' + logEl.innerHTML;
-    // Keep log small
-    if (logEl.innerHTML.length > 3000) {
-        logEl.innerHTML = logEl.innerHTML.substring(0, 3000);
+    const VAPID_KEY = "BCXgZy1ydjIHfjif1l0ktbMRHkY8lBipHu9vaW8ETWOztov7PfljN_dgSXRyihT73SrQo9lV1PRO9a74kCXb3rk";
+
+    const AMBIENT_MIN = 15, AMBIENT_MAX = 25;
+    const FRIDGE_MIN = 2, FRIDGE_MAX = 8;
+
+    // ====== STATE ======
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let user = null;
+
+    let messaging = null;
+    let swReg = null;
+    let fcmToken = null;
+
+    let chart = null;
+    let chartPeriod = "day";
+
+    // ====== UI HELPERS ======
+    const $ = (id) => document.getElementById(id);
+
+    function log(s) {
+      const el = $("debug");
+      const t = new Date().toLocaleTimeString();
+      el.innerHTML = "[" + t + "] " + s + "<br>" + el.innerHTML;
+      if (el.innerHTML.length > 3000) el.innerHTML = el.innerHTML.slice(0, 3000);
+      console.log(s);
     }
-}
 
-// ============================================
-// NOTIFICATION FUNCTIONS
-// ============================================
-function checkNotificationSupport() {
-    log('Checking notification support...');
-    
-    var statusEl = document.getElementById('notifStatus');
-    var enableBtn = document.getElementById('enableBtn');
-    var testBtn = document.getElementById('testBtn');
-    
-    // Check if Notification API exists
-    if (!('Notification' in window)) {
-        log('Notification API NOT available');
-        statusEl.textContent = '❌ Notifications not supported on this browser';
-        statusEl.className = 'notif-status denied';
-        enableBtn.disabled = true;
-        testBtn.disabled = true;
-        return;
+    function toast(msg, kind) {
+      const box = $("toastBox");
+      const div = document.createElement("div");
+      div.className = "toast " + (kind || "inf");
+      div.textContent = msg;
+      box.appendChild(div);
+      setTimeout(() => div.remove(), 3500);
     }
-    
-    log('Notification API available');
-    log('Current permission: ' + Notification.permission);
-    
-    // Update UI based on current permission
-    updateNotificationUI();
-}
 
-function updateNotificationUI() {
-    var statusEl = document.getElementById('notifStatus');
-    var enableBtn = document.getElementById('enableBtn');
-    var permission = Notification.permission;
-    
-    if (permission === 'granted') {
-        statusEl.textContent = '✅ Notifications enabled! You will receive alerts.';
-        statusEl.className = 'notif-status granted';
-        enableBtn.textContent = '✓ Already Enabled';
-        enableBtn.disabled = true;
-    } else if (permission === 'denied') {
-        statusEl.textContent = '❌ Notifications blocked. Please enable in browser settings.';
-        statusEl.className = 'notif-status denied';
-        enableBtn.textContent = 'Blocked by Browser';
-        enableBtn.disabled = true;
-    } else {
-        statusEl.textContent = '⚠️ Click button below to enable alerts';
-        statusEl.className = 'notif-status default';
-        enableBtn.textContent = 'Enable Notifications';
-        enableBtn.disabled = false;
+    function setLive(ok) {
+      $("liveDot").classList.toggle("on", !!ok);
+      $("liveTxt").textContent = ok ? "Live" : "Connecting";
     }
-}
 
-function enableNotifications() {
-    log('Enable button clicked');
-    
-    var btn = document.getElementById('enableBtn');
-    btn.textContent = 'Requesting...';
-    btn.disabled = true;
-    
-    // Request permission
-    Notification.requestPermission()
-        .then(function(permission) {
-            log('Permission result: ' + permission);
-            updateNotificationUI();
-            
-            if (permission === 'granted') {
-                log('Permission granted!');
-                // Show a welcome notification
-                showNotification('🎉 Notifications Enabled!', 'You will now receive temperature alerts.');
-            }
-        })
-        .catch(function(error) {
-            log('Permission error: ' + error);
-            btn.textContent = 'Error - Try Again';
-            btn.disabled = false;
-        });
-}
-
-function testNotification() {
-    log('Test button clicked');
-    
-    // Check permission first
-    if (Notification.permission !== 'granted') {
-        log('Permission not granted, requesting...');
-        alert('Please enable notifications first by clicking the Enable button');
-        return;
+    // ====== AUTH ======
+    function showApp() {
+      $("login").classList.add("hide");
+      $("hdr").style.display = "block";
+      $("app").style.display = "block";
+      $("userLabel").textContent = user?.email || "demo";
+      $("loading").classList.add("hide");
     }
-    
-    // Show test notification
-    showNotification(
-        '🧪 Test Alert', 
-        'Notifications are working! Time: ' + new Date().toLocaleTimeString()
-    );
-    
-    log('Test notification sent');
-}
 
-function showNotification(title, body) {
-    log('Showing notification: ' + title);
-    
-    try {
-        var notification = new Notification(title, {
-            body: body,
-            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌡️</text></svg>',
-            badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
-            tag: 'pharmacy-' + Date.now(),
-            requireInteraction: false
-        });
-        
-        notification.onclick = function() {
-            log('Notification clicked');
-            window.focus();
-            notification.close();
-        };
-        
-        notification.onshow = function() {
-            log('Notification displayed successfully');
-        };
-        
-        notification.onerror = function(e) {
-            log('Notification error: ' + e);
-        };
-        
-        // Auto close after 5 seconds
-        setTimeout(function() {
-            notification.close();
-        }, 5000);
-        
-    } catch (e) {
-        log('Notification exception: ' + e.message);
-        alert('Notification error: ' + e.message);
+    function showLogin() {
+      $("login").classList.remove("hide");
+      $("hdr").style.display = "none";
+      $("app").style.display = "none";
+      $("loading").classList.add("hide");
     }
-}
 
-// ============================================
-// DATA FUNCTIONS
-// ============================================
-var supabaseClient = null;
-
-function initSupabase() {
-    log('Initializing Supabase...');
-    
-    // Simple fetch-based approach (no library needed)
-    loadCurrentReading();
-    loadHistory();
-    
-    // Refresh every 30 seconds
-    setInterval(function() {
-        loadCurrentReading();
-    }, 30000);
-    
-    document.getElementById('connection').textContent = 'Connected';
-    document.getElementById('connection').style.color = '#22c55e';
-}
-
-function loadCurrentReading() {
-    var url = SUPABASE_URL + '/rest/v1/temperature_readings?order=timestamp.desc&limit=1';
-    
-    fetch(url, {
-        headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY
-        }
-    })
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(data) {
-        if (data && data.length > 0) {
-            updateTemperatureDisplay(data[0]);
-        }
-    })
-    .catch(function(error) {
-        log('Error loading data: ' + error);
-        document.getElementById('connection').textContent = 'Error';
-        document.getElementById('connection').style.color = '#ef4444';
+    $("demoBtn").addEventListener("click", () => {
+      user = { email: "demo@pharmacy.com" };
+      showApp();
+      bootAfterLogin();
     });
-}
 
-function updateTemperatureDisplay(reading) {
-    var ambient = parseFloat(reading.ambient_temp);
-    var fridge = parseFloat(reading.freezer_temp);
-    
-    var ambientEl = document.getElementById('ambientTemp');
-    var fridgeEl = document.getElementById('fridgeTemp');
-    
-    ambientEl.textContent = ambient.toFixed(1) + '°C';
-    fridgeEl.textContent = fridge.toFixed(1) + '°C';
-    
-    // Check if in range
-    var ambientOk = ambient >= AMBIENT_MIN && ambient <= AMBIENT_MAX;
-    var fridgeOk = fridge >= FRIDGE_MIN && fridge <= FRIDGE_MAX;
-    
-    ambientEl.className = 'temp-value ' + (ambientOk ? 'ok' : 'bad');
-    fridgeEl.className = 'temp-value ' + (fridgeOk ? 'ok' : 'bad');
-    
-    // Update timestamp
-    var time = new Date(reading.timestamp);
-    document.getElementById('lastUpdate').textContent = time.toLocaleTimeString();
-    
-    // Show alert if out of range
-    if (!ambientOk || !fridgeOk) {
-        if (Notification.permission === 'granted') {
-            var msg = '';
-            if (!ambientOk) msg += 'Ambient: ' + ambient.toFixed(1) + '°C ';
-            if (!fridgeOk) msg += 'Fridge: ' + fridge.toFixed(1) + '°C';
-            showNotification('🚨 Temperature Alert!', msg);
-        }
-    }
-}
+    $("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      $("loginErr").classList.remove("show");
 
-function loadHistory() {
-    var url = SUPABASE_URL + '/rest/v1/temperature_readings?order=timestamp.desc&limit=10';
-    
-    fetch(url, {
-        headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY
-        }
-    })
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(data) {
-        var tbody = document.getElementById('historyTable');
-        
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">No data</td></tr>';
-            return;
-        }
-        
-        var html = '';
-        var alertCount = 0;
-        
-        for (var i = 0; i < data.length; i++) {
-            var r = data[i];
-            var ambient = parseFloat(r.ambient_temp);
-            var fridge = parseFloat(r.freezer_temp);
-            var time = new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-            
-            var ambientOk = ambient >= AMBIENT_MIN && ambient <= AMBIENT_MAX;
-            var fridgeOk = fridge >= FRIDGE_MIN && fridge <= FRIDGE_MAX;
-            var rowOk = ambientOk && fridgeOk;
-            
-            if (!rowOk) alertCount++;
-            
-            html += '<tr>';
-            html += '<td>' + time + '</td>';
-            html += '<td style="color:' + (ambientOk ? '#4cc9f0' : '#ef4444') + '">' + ambient.toFixed(1) + '°</td>';
-            html += '<td style="color:' + (fridgeOk ? '#4361ee' : '#ef4444') + '">' + fridge.toFixed(1) + '°</td>';
-            html += '<td><span class="badge ' + (rowOk ? 'ok' : 'bad') + '">' + (rowOk ? '✓ OK' : '⚠️') + '</span></td>';
-            html += '</tr>';
-        }
-        
-        tbody.innerHTML = html;
-        document.getElementById('alertCount').textContent = alertCount;
-        document.getElementById('alertCount').style.color = alertCount > 0 ? '#ef4444' : '#22c55e';
-    })
-    .catch(function(error) {
-        log('Error loading history: ' + error);
+      const email = $("email").value.trim();
+      const pass = $("pass").value;
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if (error) {
+        $("loginErr").textContent = error.message;
+        $("loginErr").classList.add("show");
+        return;
+      }
+      user = data.user;
+      showApp();
+      bootAfterLogin();
     });
-}
 
-// ============================================
-// INITIALIZATION
-// ============================================
-function init() {
-    log('App starting...');
-    log('User Agent: ' + navigator.userAgent.substring(0, 50));
-    
-    // Check notifications
-    checkNotificationSupport();
-    
-    // Load data
-    initSupabase();
-    
-    log('App initialized');
-}
+    $("logoutBtn").addEventListener("click", async () => {
+      await sb.auth.signOut();
+      user = null;
+      showLogin();
+    });
 
-// Start when page loads
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
-</script>
+    // ====== DATA ======
+    function computeAlertFlags(r) {
+      const amb = Number(r.ambient_temp);
+      const fri = Number(r.freezer_temp);
+      const ambBad = amb < AMBIENT_MIN || amb > AMBIENT_MAX;
+      const friBad = fri < FRIDGE_MIN || fri > FRIDGE_MAX;
+      return { amb, fri, ambBad, friBad };
+    }
 
-</body>
-</html>
+    function updateCards(r) {
+      const x = computeAlertFlags(r);
+
+      $("ambT").textContent = x.amb.toFixed(1) + "°C";
+      $("friT").textContent = x.fri.toFixed(1) + "°C";
+
+      $("ambT").className = "temp " + (x.ambBad ? "bad" : "ok");
+      $("friT").className = "temp " + (x.friBad ? "bad" : "ok");
+
+      $("ambCard").classList.toggle("alert", x.ambBad);
+      $("friCard").classList.toggle("alert", x.friBad);
+
+      $("lastUp").textContent = new Date(r.timestamp).toLocaleString();
+      $("rssi").textContent = (r.wifi_rssi ?? "--") + " dBm";
+
+      setLive(true);
+
+      // Foreground local notification
+      if ((x.ambBad || x.friBad) && Notification.permission === "granted") {
+        const msg =
+          (x.ambBad ? ("Ambient " + x.amb.toFixed(1) + "°C ") : "") +
+          (x.friBad ? ("Fridge " + x.fri.toFixed(1) + "°C") : "");
+        new Notification("🚨 Temperature Alert", { body: msg, icon: "/icon-192.png" });
+      }
+    }
+
+    async function loadCurrent() {
+      const { data, error } = await sb
+        .from("temperature_readings")
+        .select("*")
+        .order("timestamp", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!error && data) updateCards(data);
+    }
+
+    async function loadCounts() {
+      const { count: totalCount } = await sb
+        .from("temperature_readings")
+        .select("*", { count: "exact", head: true });
+
+      $("tot").textContent = totalCount ?? "--";
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      const { data } = await sb
+        .from("temperature_readings")
+        .select("ambient_alert, freezer_alert, timestamp")
+        .gte("timestamp", today.toISOString());
+
+      const alerts = (data || []).filter(r => r.ambient_alert || r.freezer_alert).length;
+      $("aToday").textContent = String(alerts);
+      $("aToday").style.color = alerts > 0 ? "#ef4444" : "#22c55e";
+    }
+
+    async function loadTable() {
+      const { data } = await sb
+        .from("temperature_readings")
+        .select("*")
+        .order("timestamp", { ascending: false })
+        .limit(10);
+
+      const rows = data || [];
+      if (rows.length === 0) {
+        $("tbl").innerHTML = '<tr><td colspan="4" style="color:#8b8b9a;">No data</td></tr>';
+        return;
+      }
+
+      $("tbl").innerHTML = rows.map(r => {
+        const x = computeAlertFlags(r);
+        const bad = x.ambBad || x.friBad;
+        return (
+          "<tr>" +
+          "<td>" + new Date(r.timestamp).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) + "</td>" +
+          "<td style='color:" + (x.ambBad ? "#ef4444" : "#4cc9f0") + "'>" + x.amb.toFixed(1) + "°</td>" +
+          "<td style='color:" + (x.friBad ? "#ef4444" : "#4361ee")
