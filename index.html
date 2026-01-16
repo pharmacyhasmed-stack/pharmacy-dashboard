@@ -6,18 +6,13 @@
     <meta name="theme-color" content="#0a0a0f">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="icon" href="icon-192.png">
     
     <title>Pharmacy Monitor</title>
     
-    <!-- OneSignal -->
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    
-    <!-- Chart.js & Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
@@ -29,10 +24,8 @@
             background: #0a0a0f;
             color: #fff;
             min-height: 100vh;
-            line-height: 1.5;
         }
         
-        /* Loading */
         #loading {
             position: fixed;
             inset: 0;
@@ -57,7 +50,6 @@
         
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Login */
         #loginPage {
             position: fixed;
             inset: 0;
@@ -80,10 +72,7 @@
             border: 1px solid #252535;
         }
         
-        .login-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
+        .login-header { text-align: center; margin-bottom: 24px; }
         
         .login-icon {
             width: 64px;
@@ -112,7 +101,6 @@
             color: #fff;
             font-size: 15px;
             outline: none;
-            transition: border-color 0.2s;
         }
         
         .input-group input:focus { border-color: #4361ee; }
@@ -125,7 +113,6 @@
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
         
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -162,7 +149,6 @@
         
         .error-box.show { display: block; }
         
-        /* Header */
         header {
             background: #101018;
             padding: 12px 20px;
@@ -257,26 +243,25 @@
             gap: 8px;
             cursor: pointer;
             font-size: 13px;
-            transition: background 0.15s;
         }
         
         .menu-item:hover { background: #1a1a28; }
         .menu-item.danger { color: #ef4444; }
         
-        /* Main */
-        main {
-            padding: 16px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        main { padding: 16px; max-width: 1100px; margin: 0 auto; }
         
-        /* Notification Bar */
         .notif-card {
             background: #151520;
             border-radius: 12px;
             padding: 14px 18px;
             margin-bottom: 16px;
             border: 1px solid #252535;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .notif-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -318,7 +303,17 @@
         .btn-enable:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-test { background: #252535; color: #fff; }
         
-        /* Cards Grid */
+        .notif-debug {
+            background: #0a0a0f;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #888;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
         .cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -411,7 +406,6 @@
         .info-line .label { color: #888; }
         .info-line .value { font-weight: 500; }
         
-        /* Stats */
         .stats {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -430,7 +424,6 @@
         .stat-label { color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 6px; }
         .stat-val { font-size: 18px; font-weight: 600; }
         
-        /* Chart */
         .chart-card {
             background: #151520;
             border-radius: 14px;
@@ -466,14 +459,12 @@
             cursor: pointer;
             font-size: 12px;
             font-weight: 500;
-            transition: all 0.2s;
         }
         
         .tab.active { background: #4361ee; color: #fff; }
         
         .chart-area { height: 260px; }
         
-        /* Table */
         .table-card {
             background: #151520;
             border-radius: 14px;
@@ -506,7 +497,6 @@
         .badge.ok { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
         .badge.bad { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
         
-        /* Toast */
         .toasts {
             position: fixed;
             top: 70px;
@@ -534,31 +524,24 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        /* App Container */
         #app { display: none; }
         #app.show { display: block; }
         
-        /* Responsive */
         @media (max-width: 640px) {
             .stats { grid-template-columns: repeat(3, 1fr); }
             .cards { grid-template-columns: 1fr; }
-            .notif-card { flex-direction: column; text-align: center; }
-            .notif-left { flex-direction: column; }
             .temp { font-size: 36px; }
         }
     </style>
 </head>
 <body>
-    <!-- Loading -->
     <div id="loading">
         <div class="spinner"></div>
         <p style="margin-top:16px;color:#666;">Loading...</p>
     </div>
 
-    <!-- Toasts -->
     <div class="toasts" id="toasts"></div>
 
-    <!-- Login Page -->
     <div id="loginPage">
         <div class="login-card">
             <div class="login-header">
@@ -587,7 +570,6 @@
         </div>
     </div>
 
-    <!-- Main App -->
     <div id="app">
         <header>
             <div class="brand">
@@ -605,8 +587,8 @@
                 <div class="menu-wrap">
                     <div class="avatar" id="avatar" onclick="toggleMenu()">U</div>
                     <div class="menu" id="menu">
-                        <div class="menu-item" onclick="enableNotif()">🔔 Enable Notifications</div>
-                        <div class="menu-item" onclick="testNotif()">🧪 Test Notification</div>
+                        <div class="menu-item" onclick="subscribeOneSignal()">🔔 Subscribe to Alerts</div>
+                        <div class="menu-item" onclick="sendTestFromDashboard()">🧪 Send Test Push</div>
                         <div class="menu-item" onclick="refreshAll()">🔄 Refresh Data</div>
                         <div class="menu-item" onclick="exportData()">📥 Export CSV</div>
                         <div class="menu-item danger" onclick="logout()">🚪 Sign Out</div>
@@ -616,22 +598,23 @@
         </header>
 
         <main>
-            <!-- Notification Status -->
             <div class="notif-card">
-                <div class="notif-left">
-                    <div class="notif-icon" id="notifIcon">🔔</div>
-                    <div class="notif-text">
-                        <strong>Push Notifications</strong>
-                        <span id="notifStatus">Click Enable to receive alerts</span>
+                <div class="notif-top">
+                    <div class="notif-left">
+                        <div class="notif-icon" id="notifIcon">🔔</div>
+                        <div class="notif-text">
+                            <strong>Push Notifications</strong>
+                            <span id="notifStatus">Loading OneSignal...</span>
+                        </div>
+                    </div>
+                    <div class="notif-btns">
+                        <button class="btn-enable" id="enableBtn" onclick="subscribeOneSignal()">Subscribe</button>
+                        <button class="btn-test" onclick="sendTestFromDashboard()">Test Push</button>
                     </div>
                 </div>
-                <div class="notif-btns">
-                    <button class="btn-enable" id="enableBtn" onclick="enableNotif()">Enable</button>
-                    <button class="btn-test" onclick="testNotif()">Test</button>
-                </div>
+                <div class="notif-debug" id="debugLog">Debug log will appear here...</div>
             </div>
 
-            <!-- Temperature Cards -->
             <div class="cards">
                 <div class="card" id="ambientCard">
                     <div class="card-top">
@@ -679,7 +662,6 @@
                 </div>
             </div>
 
-            <!-- Stats -->
             <div class="stats">
                 <div class="stat">
                     <div class="stat-label">Avg Ambient</div>
@@ -703,7 +685,6 @@
                 </div>
             </div>
 
-            <!-- Chart -->
             <div class="chart-card">
                 <div class="chart-top">
                     <h2 class="chart-title">📊 Temperature History</h2>
@@ -718,7 +699,6 @@
                 </div>
             </div>
 
-            <!-- Table -->
             <div class="table-card">
                 <h2>📋 Recent Readings</h2>
                 <table>
@@ -733,94 +713,216 @@
         </main>
     </div>
 
+    <!-- OneSignal SDK - Load LAST -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
     <script>
     // ===== CONFIG =====
     const SUPABASE_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
+    
+    // OneSignal - REPLACE WITH YOUR NEW APP ID!
     const ONESIGNAL_APP_ID = 'f4eadf19-be57-49f3-aa0e-907502675358';
+    const ONESIGNAL_API_KEY = 'os_v2_app_6tvn6gn6k5e7hkqosb2qez2tldbadhzccguu7mejua7ri7ihayqb5zwlqsd66v7x2l44ujkmmpzhiq5gkqfujk3mlfjtv55s2fgxfsi';
     
     const AMBIENT_MIN = 15, AMBIENT_MAX = 25;
     const FRIDGE_MIN = 2, FRIDGE_MAX = 8;
 
     let db, chart, user;
     let currentPeriod = 'day';
+    let oneSignalReady = false;
 
-    // ===== ONESIGNAL =====
+    // ===== DEBUG LOGGING =====
+    function log(msg) {
+        console.log(msg);
+        const debugEl = document.getElementById('debugLog');
+        if (debugEl) {
+            const time = new Date().toLocaleTimeString();
+            debugEl.innerHTML = `[${time}] ${msg}<br>` + debugEl.innerHTML;
+        }
+    }
+
+    // ===== ONESIGNAL SETUP =====
     window.OneSignalDeferred = window.OneSignalDeferred || [];
+    
     OneSignalDeferred.push(async function(OneSignal) {
+        log('OneSignal SDK loaded, initializing...');
+        
         try {
             await OneSignal.init({
                 appId: ONESIGNAL_APP_ID,
-                allowLocalhostAsSecureOrigin: true
+                allowLocalhostAsSecureOrigin: true,
+                serviceWorkerParam: { scope: '/' },
+                serviceWorkerPath: 'OneSignalSDKWorker.js',
+                notifyButton: { enable: false }
             });
-            console.log('✅ OneSignal ready');
+            
+            oneSignalReady = true;
+            log('✅ OneSignal initialized successfully!');
+            
+            // Check current state
+            const permission = OneSignal.Notifications.permission;
+            const subscribed = await OneSignal.User.PushSubscription.optedIn;
+            const id = OneSignal.User.PushSubscription.id;
+            
+            log(`Permission: ${permission}`);
+            log(`Subscribed: ${subscribed}`);
+            log(`Player ID: ${id || 'none'}`);
+            
             updateNotifUI();
+            
+            // Listen for subscription changes
+            OneSignal.User.PushSubscription.addEventListener('change', (event) => {
+                log(`Subscription changed! Token: ${event.current.token ? 'yes' : 'no'}`);
+                updateNotifUI();
+            });
+            
         } catch (e) {
+            log('❌ OneSignal init error: ' + e.message);
             console.error('OneSignal error:', e);
-            document.getElementById('notifStatus').textContent = 'Error initializing';
         }
     });
 
-    function updateNotifUI() {
+    async function updateNotifUI() {
         const icon = document.getElementById('notifIcon');
         const status = document.getElementById('notifStatus');
         const btn = document.getElementById('enableBtn');
         
-        const perm = Notification.permission;
+        if (!oneSignalReady) {
+            status.textContent = 'Loading OneSignal...';
+            return;
+        }
         
-        if (perm === 'granted') {
-            icon.className = 'notif-icon ok';
-            icon.textContent = '✅';
-            status.textContent = 'Enabled - You\'ll receive alerts';
-            status.style.color = '#22c55e';
-            btn.textContent = '✓ Enabled';
-            btn.disabled = true;
-        } else if (perm === 'denied') {
-            icon.className = 'notif-icon err';
-            icon.textContent = '🚫';
-            status.textContent = 'Blocked - Enable in browser settings';
-            status.style.color = '#ef4444';
-            btn.textContent = 'Blocked';
-            btn.disabled = true;
-        } else {
-            icon.className = 'notif-icon';
-            icon.textContent = '🔔';
-            status.textContent = 'Click Enable to receive alerts';
-            status.style.color = '#f59e0b';
-            btn.disabled = false;
+        try {
+            const permission = OneSignal.Notifications.permission;
+            let subscribed = false;
+            let playerId = null;
+            
+            try {
+                subscribed = await OneSignal.User.PushSubscription.optedIn;
+                playerId = OneSignal.User.PushSubscription.id;
+            } catch(e) {
+                log('Could not check subscription: ' + e.message);
+            }
+            
+            log(`UI Update - Permission: ${permission}, Subscribed: ${subscribed}, ID: ${playerId}`);
+            
+            if (permission === true && subscribed && playerId) {
+                icon.className = 'notif-icon ok';
+                icon.textContent = '✅';
+                status.textContent = `Subscribed! ID: ${playerId.substring(0, 8)}...`;
+                status.style.color = '#22c55e';
+                btn.textContent = '✓ Subscribed';
+                btn.disabled = true;
+            } else if (permission === false) {
+                icon.className = 'notif-icon err';
+                icon.textContent = '🚫';
+                status.textContent = 'Blocked - Enable in browser settings';
+                status.style.color = '#ef4444';
+                btn.textContent = 'Blocked';
+                btn.disabled = true;
+            } else {
+                icon.className = 'notif-icon';
+                icon.textContent = '🔔';
+                status.textContent = 'Click Subscribe to receive alerts';
+                status.style.color = '#f59e0b';
+                btn.textContent = 'Subscribe';
+                btn.disabled = false;
+            }
+        } catch(e) {
+            log('UI update error: ' + e.message);
         }
     }
 
-    async function enableNotif() {
+    async function subscribeOneSignal() {
+        log('Subscribe button clicked...');
+        
+        if (!oneSignalReady) {
+            log('❌ OneSignal not ready yet!');
+            toast('OneSignal still loading, please wait...', 'error');
+            return;
+        }
+        
         try {
-            toast('Requesting permission...', 'info');
-            const perm = await Notification.requestPermission();
+            log('Requesting notification permission...');
             
-            if (perm === 'granted') {
-                try {
-                    await OneSignal.User.PushSubscription.optIn();
-                } catch(e) {}
-                toast('Notifications enabled! 🎉', 'success');
-            } else {
-                toast('Permission ' + perm, 'error');
+            // First request browser permission
+            const browserPerm = await Notification.requestPermission();
+            log(`Browser permission result: ${browserPerm}`);
+            
+            if (browserPerm !== 'granted') {
+                log('❌ Browser permission denied');
+                toast('Permission denied!', 'error');
+                updateNotifUI();
+                return;
             }
+            
+            // Now opt-in to OneSignal
+            log('Opting in to OneSignal...');
+            await OneSignal.User.PushSubscription.optIn();
+            
+            // Wait a moment for subscription to process
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // Check if we got a player ID
+            const playerId = OneSignal.User.PushSubscription.id;
+            const subscribed = await OneSignal.User.PushSubscription.optedIn;
+            
+            log(`After optIn - Subscribed: ${subscribed}, Player ID: ${playerId}`);
+            
+            if (playerId) {
+                log('✅ Successfully subscribed! Player ID: ' + playerId);
+                toast('🎉 Successfully subscribed to notifications!', 'success');
+            } else {
+                log('⚠️ OptIn completed but no player ID yet');
+                toast('Subscription processing...', 'info');
+            }
+            
             updateNotifUI();
-        } catch (e) {
+            
+        } catch(e) {
+            log('❌ Subscribe error: ' + e.message);
+            console.error('Subscribe error:', e);
             toast('Error: ' + e.message, 'error');
         }
     }
 
-    function testNotif() {
-        if (Notification.permission !== 'granted') {
-            toast('Enable notifications first!', 'error');
-            return;
-        }
+    async function sendTestFromDashboard() {
+        log('Sending test push via OneSignal API...');
         
-        new Notification('🧪 Test Alert', {
-            body: 'Push notifications working!',
-            icon: 'icon-192.png'
-        });
-        toast('Test sent!', 'success');
+        try {
+            const response = await fetch('https://onesignal.com/api/v1/notifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${ONESIGNAL_API_KEY}`
+                },
+                body: JSON.stringify({
+                    app_id: ONESIGNAL_APP_ID,
+                    included_segments: ['All'],
+                    headings: { en: '🧪 Test Notification' },
+                    contents: { en: 'This is a test push from your Pharmacy Monitor!' },
+                    url: window.location.href
+                })
+            });
+            
+            const result = await response.json();
+            log('OneSignal API response: ' + JSON.stringify(result));
+            
+            if (result.id) {
+                toast('✅ Test push sent! Check your notifications.', 'success');
+                log('✅ Push sent! Notification ID: ' + result.id);
+            } else if (result.errors) {
+                toast('Error: ' + JSON.stringify(result.errors), 'error');
+                log('❌ API Error: ' + JSON.stringify(result.errors));
+            } else {
+                toast('Push sent, but no recipients', 'info');
+                log('⚠️ Sent but: ' + JSON.stringify(result));
+            }
+        } catch(e) {
+            log('❌ API call failed: ' + e.message);
+            toast('Failed to send: ' + e.message, 'error');
+        }
     }
 
     // ===== AUTH =====
@@ -873,7 +975,6 @@
         }
         
         loadAll();
-        updateNotifUI();
     }
 
     function toggleMenu() {
@@ -921,7 +1022,6 @@
         const ambBad = amb < AMBIENT_MIN || amb > AMBIENT_MAX;
         const friBad = fri < FRIDGE_MIN || fri > FRIDGE_MAX;
         
-        // Ambient
         document.getElementById('ambientTemp').textContent = amb.toFixed(1) + '°C';
         document.getElementById('ambientTemp').className = 'temp ' + (ambBad ? 'bad' : 'ok');
         document.getElementById('ambientCard').classList.toggle('alert', ambBad);
@@ -929,7 +1029,6 @@
         document.getElementById('ambientBar').style.width = ambPct + '%';
         document.getElementById('ambientBar').classList.toggle('bad', ambBad);
         
-        // Fridge
         document.getElementById('fridgeTemp').textContent = fri.toFixed(1) + '°C';
         document.getElementById('fridgeTemp').className = 'temp ' + (friBad ? 'bad' : 'ok');
         document.getElementById('fridgeCard').classList.toggle('alert', friBad);
@@ -937,7 +1036,6 @@
         document.getElementById('fridgeBar').style.width = friPct + '%';
         document.getElementById('fridgeBar').classList.toggle('bad', friBad);
         
-        // Status
         document.getElementById('lastUpdate').textContent = new Date(r.timestamp).toLocaleTimeString();
         document.getElementById('wifi').textContent = (r.wifi_rssi || '--') + ' dBm';
     }
@@ -948,7 +1046,6 @@
         const week = new Date(now - 7*24*60*60*1000).toISOString();
         const month = new Date(now - 30*24*60*60*1000).toISOString();
         
-        // Today's data for averages
         const { data: todayData } = await db
             .from('temperature_readings')
             .select('ambient_temp, freezer_temp, ambient_alert, freezer_alert')
@@ -965,7 +1062,6 @@
             document.getElementById('alertsToday').style.color = alerts > 0 ? '#ef4444' : '#22c55e';
         }
         
-        // Counts
         const { count: wk } = await db.from('temperature_readings').select('*', { count: 'exact', head: true }).gte('timestamp', week);
         const { count: mo } = await db.from('temperature_readings').select('*', { count: 'exact', head: true }).gte('timestamp', month);
         const { count: tot } = await db.from('temperature_readings').select('*', { count: 'exact', head: true });
@@ -1003,7 +1099,6 @@
     // ===== CHART =====
     function createChart() {
         const ctx = document.getElementById('chart').getContext('2d');
-        
         if (chart) chart.destroy();
         
         chart = new Chart(ctx, {
@@ -1035,18 +1130,10 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: { intersect: false, mode: 'index' },
-                plugins: {
-                    legend: { labels: { color: '#888', boxWidth: 12 } }
-                },
+                plugins: { legend: { labels: { color: '#888', boxWidth: 12 } } },
                 scales: {
-                    x: { 
-                        grid: { color: 'rgba(255,255,255,0.05)' }, 
-                        ticks: { color: '#666', maxTicksLimit: 8 } 
-                    },
-                    y: { 
-                        grid: { color: 'rgba(255,255,255,0.05)' }, 
-                        ticks: { color: '#666' }
-                    }
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#666', maxTicksLimit: 8 } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#666' } }
                 }
             }
         });
@@ -1058,13 +1145,9 @@
         const now = new Date();
         let start;
         
-        if (period === 'day') {
-            start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        } else if (period === 'week') {
-            start = new Date(now - 7 * 24 * 60 * 60 * 1000);
-        } else {
-            start = new Date(now - 30 * 24 * 60 * 60 * 1000);
-        }
+        if (period === 'day') start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        else if (period === 'week') start = new Date(now - 7 * 24 * 60 * 60 * 1000);
+        else start = new Date(now - 30 * 24 * 60 * 60 * 1000);
         
         const { data } = await db
             .from('temperature_readings')
@@ -1080,11 +1163,8 @@
             return;
         }
         
-        // Sample if too many points
         const maxPts = 40;
-        const sampled = data.length > maxPts 
-            ? data.filter((_, i) => i % Math.ceil(data.length / maxPts) === 0)
-            : data;
+        const sampled = data.length > maxPts ? data.filter((_, i) => i % Math.ceil(data.length / maxPts) === 0) : data;
         
         chart.data.labels = sampled.map(r => {
             const d = new Date(r.timestamp);
@@ -1095,11 +1175,9 @@
         
         chart.data.datasets[0].data = sampled.map(r => parseFloat(r.ambient_temp));
         chart.data.datasets[1].data = sampled.map(r => parseFloat(r.freezer_temp));
-        
         chart.update('none');
     }
 
-    // Tab clicks
     document.querySelector('.tabs').addEventListener('click', (e) => {
         if (e.target.classList.contains('tab')) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1116,8 +1194,44 @@
                 loadTable();
                 loadStats();
                 if (currentPeriod === 'day') loadChartData('day');
+                
+                // Send push notification if there's an alert
+                const r = payload.new;
+                if (r.ambient_alert || r.freezer_alert) {
+                    sendAlertNotification(r);
+                }
             })
             .subscribe();
+    }
+
+    async function sendAlertNotification(r) {
+        let msg = '';
+        if (r.ambient_alert) msg += `Ambient: ${parseFloat(r.ambient_temp).toFixed(1)}°C `;
+        if (r.freezer_alert) msg += `Fridge: ${parseFloat(r.freezer_temp).toFixed(1)}°C`;
+        
+        log('🚨 Alert detected! Sending push: ' + msg);
+        
+        try {
+            const response = await fetch('https://onesignal.com/api/v1/notifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${ONESIGNAL_API_KEY}`
+                },
+                body: JSON.stringify({
+                    app_id: ONESIGNAL_APP_ID,
+                    included_segments: ['All'],
+                    headings: { en: '🚨 Temperature Alert!' },
+                    contents: { en: msg },
+                    url: window.location.href
+                })
+            });
+            
+            const result = await response.json();
+            log('Alert push result: ' + JSON.stringify(result));
+        } catch(e) {
+            log('Alert push error: ' + e.message);
+        }
     }
 
     // ===== UTILS =====
@@ -1157,7 +1271,10 @@
 
     // ===== INIT =====
     document.addEventListener('DOMContentLoaded', async () => {
+        log('App starting...');
+        
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        log('Supabase initialized');
         
         const { data: { session } } = await db.auth.getSession();
         if (session) {
@@ -1166,11 +1283,14 @@
         }
         
         document.getElementById('loading').classList.add('hide');
+        log('App ready');
     });
 
     // Service Worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(e => console.log('SW:', e));
+        navigator.serviceWorker.register('sw.js')
+            .then(() => log('Service Worker registered'))
+            .catch(e => log('SW error: ' + e.message));
     }
     </script>
 </body>
