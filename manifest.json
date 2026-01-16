@@ -1,21 +1,14 @@
 {
-    "name": "Pharmacy Temperature Monitor",
-    "short_name": "Pharmacy",
-    "description": "Temperature monitoring with push notifications",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#0a0a0f",
-    "theme_color": "#4361ee",
-    "icons": [
-        {
-            "src": "icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ]
+  "name": "Pharmacy Temperature Monitor",
+  "short_name": "Pharmacy",
+  "description": "Temperature monitoring with push notifications",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
 }
