@@ -393,4 +393,240 @@
           "<tr>" +
           "<td>" + new Date(r.timestamp).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) + "</td>" +
           "<td style='color:" + (x.ambBad ? "#ef4444" : "#4cc9f0") + "'>" + x.amb.toFixed(1) + "°</td>" +
-          "<td style='color:" + (x.friBad ? "#ef4444" : "#4361ee")
+          "<td style='color:" + (x.friBad ? "#ef4444" : "#4361ee") + "'>" + x.fri.toFixed(1) + "°</td>" +
+          "<td><span class='badge " + (bad ? "bBad" : "bOk") + "'>" + (bad ? "ALERT" : "OK") + "</span></td>" +
+          "</tr>"
+        );
+      }).join("");
+    }
+
+    function makeChart() {
+      const ctx = $("chart").getContext("2d");
+      chart = new Chart(ctx, {
+        type: "line",
+        data: { labels: [], datasets: [
+          { label: "Ambient", data: [], tension: 0.35, pointRadius: 2 },
+          { label: "Fridge", data: [], tension: 0.35, pointRadius: 2 }
+        ]},
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: "#c9c9d6" } } },
+          scales: {
+            x: { ticks: { color: "#9a9ab0" }, grid: { color: "rgba(255,255,255,0.06)" } },
+            y: { ticks: { color: "#9a9ab0" }, grid: { color: "rgba(255,255,255,0.06)" } }
+          }
+        }
+      });
+    }
+
+    function avg(arr) {
+      if (!arr.length) return null;
+      return arr.reduce((s,v)=>s+v,0) / arr.length;
+    }
+
+    async function loadChart(period) {
+      chartPeriod = period;
+
+      const now = new Date();
+      let start;
+      if (period === "day") start = new Date(now.getTime() - 24*60*60*1000);
+      else if (period === "week") start = new Date(now.getTime() - 7*24*60*60*1000);
+      else start = new Date(now.getTime() - 30*24*60*60*1000);
+
+      const { data } = await sb
+        .from("temperature_readings")
+        .select("timestamp, ambient_temp, freezer_temp")
+        .gte("timestamp", start.toISOString())
+        .order("timestamp", { ascending: true });
+
+      const rows = data || [];
+      if (!rows.length) return;
+
+      // Downsample to max 180 points
+      const step = Math.max(1, Math.ceil(rows.length / 180));
+      const s = rows.filter((_, i) => i % step === 0);
+
+      const ambArr = s.map(r => Number(r.ambient_temp));
+      const friArr = s.map(r => Number(r.freezer_temp));
+
+      chart.data.labels = s.map(r => {
+        const d = new Date(r.timestamp);
+        if (period === "day") return d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+        return d.toLocaleDateString([], { month:"short", day:"numeric" });
+      });
+
+      chart.data.datasets[0].data = ambArr;
+      chart.data.datasets[1].data = friArr;
+      chart.update();
+
+      const aA = avg(ambArr), aF = avg(friArr);
+      $("avgLine").textContent =
+        "Averages: Ambient " + (aA ? aA.toFixed(1) : "--") + "°C, Fridge " + (aF ? aF.toFixed(1) : "--") + "°C";
+    }
+
+    function setupRealtime() {
+      sb.channel("readings")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "temperature_readings" }, async (payload) => {
+          updateCards(payload.new);
+          await loadCounts();
+          await loadTable();
+          await loadChart(chartPeriod);
+        })
+        .subscribe((st) => log("Realtime: " + st));
+    }
+
+    // ====== PUSH (FCM) ======
+    async function initFirebaseMessaging() {
+      $("pushState").textContent = "Initializing";
+      log("Firebase: init");
+
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+
+      if (!firebase.messaging.isSupported()) {
+        $("pushState").textContent = "Not supported on this browser";
+        log("Firebase: messaging not supported");
+        return;
+      }
+
+      messaging = firebase.messaging();
+
+      if (!("serviceWorker" in navigator)) {
+        $("pushState").textContent = "Service worker not supported";
+        log("SW: not supported");
+        return;
+      }
+
+      // Register the Firebase messaging service worker at root
+      swReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      log("SW: registered /firebase-messaging-sw.js");
+
+      // Foreground messages
+      messaging.onMessage((payload) => {
+        log("FCM: foreground message " + JSON.stringify(payload));
+        const title = payload?.notification?.title || "Pharmacy Alert";
+        const body = payload?.notification?.body || "Check temperatures";
+        toast(title + ": " + body, "inf");
+        if (Notification.permission === "granted") new Notification(title, { body, icon: "/icon-192.png" });
+      });
+
+      // Try read existing token
+      if (Notification.permission === "granted") {
+        try {
+          fcmToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+          if (fcmToken) log("FCM: existing token OK");
+        } catch (e) {
+          log("FCM: getToken failed " + e.message);
+        }
+      }
+
+      updatePushUI();
+    }
+
+    function updatePushUI() {
+      const perm = Notification.permission;
+      if (!messaging) {
+        $("pushState").textContent = "Initializing";
+        return;
+      }
+      if (perm === "denied") {
+        $("pushState").textContent = "Blocked in browser settings";
+        return;
+      }
+      if (perm === "granted" && fcmToken) {
+        $("pushState").textContent = "Subscribed";
+        $("subBtn").disabled = true;
+        $("subBtn").textContent = "Done";
+        return;
+      }
+      $("pushState").textContent = "Tap Subscribe and allow notifications";
+      $("subBtn").disabled = false;
+      $("subBtn").textContent = "Subscribe";
+    }
+
+    async function saveTokenToSupabase(token) {
+      // Optional: create this table later. If missing, it will fail safely.
+      const payload = { token, user_email: user?.email || "demo", updated_at: new Date().toISOString() };
+      const { error } = await sb.from("fcm_tokens").upsert(payload, { onConflict: "token" });
+      if (error) log("Supabase: fcm_tokens upsert failed " + error.message);
+      else log("Supabase: token saved");
+    }
+
+    $("subBtn").addEventListener("click", async () => {
+      if (!messaging || !swReg) {
+        toast("Push not ready yet", "err");
+        return;
+      }
+
+      const perm = await Notification.requestPermission();
+      log("Permission: " + perm);
+      if (perm !== "granted") {
+        toast("Permission not granted", "err");
+        updatePushUI();
+        return;
+      }
+
+      try {
+        fcmToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+        if (!fcmToken) throw new Error("No token received");
+        log("FCM: token " + fcmToken.slice(0, 20) + "...");
+        toast("Subscribed", "ok");
+        await saveTokenToSupabase(fcmToken);
+      } catch (e) {
+        log("FCM: subscribe failed " + e.message);
+        toast("Subscribe failed: " + e.message, "err");
+      }
+      updatePushUI();
+    });
+
+    $("testBtn").addEventListener("click", () => {
+      if (Notification.permission !== "granted") {
+        toast("Enable notifications first", "err");
+        return;
+      }
+      new Notification("🧪 Test Alert", { body: "Notifications work on this device", icon: "/icon-192.png" });
+      toast("Test notification sent", "ok");
+    });
+
+    // ====== BOOT ======
+    async function bootAfterLogin() {
+      log("Boot: after login");
+      makeChart();
+      await loadCurrent();
+      await loadCounts();
+      await loadTable();
+      await loadChart("day");
+      setupRealtime();
+      await initFirebaseMessaging();
+    }
+
+    async function boot() {
+      $("loading").classList.remove("hide");
+
+      const { data } = await sb.auth.getSession();
+      if (data?.session?.user) {
+        user = data.session.user;
+        showApp();
+        bootAfterLogin();
+        return;
+      }
+      showLogin();
+    }
+
+    // Tabs
+    document.addEventListener("click", async (e) => {
+      const b = e.target.closest(".tab");
+      if (!b) return;
+      document.querySelectorAll(".tab").forEach(x => x.classList.remove("on"));
+      b.classList.add("on");
+      await loadChart(b.dataset.p);
+    });
+
+    boot().catch((e) => {
+      console.error(e);
+      toast("Fatal: " + e.message, "err");
+      $("loading").classList.add("hide");
+    });
+  </script>
+</body>
+</html>
