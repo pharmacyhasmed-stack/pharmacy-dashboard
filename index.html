@@ -17,7 +17,6 @@
     :root{
       --bg:#0b1220; --card:#101a2f; --muted:#8ea0c2; --text:#eaf0ff;
       --border:#223155; --accent:#4f7cff; --ok:#24c16a; --bad:#ff4d5e;
-      --chip:#0d1730; --shadow: 0 10px 30px rgba(0,0,0,.35);
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
@@ -25,25 +24,25 @@
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
     .brand{display:flex;align-items:center;gap:10px}
     .brand img{width:34px;height:34px;border-radius:10px}
-    .brand .t1{font-weight:800;font-size:14px;line-height:1.1}
+    .brand .t1{font-weight:700;font-size:14px;line-height:1.1}
     .brand .t2{font-size:12px;color:var(--muted)}
     .actions{display:flex;gap:8px;flex-wrap:wrap}
-    button{border:1px solid var(--border);background:transparent;color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px}
+    button{border:1px solid var(--border);background:transparent;color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px}
     button.primary{background:var(--accent);border-color:transparent}
+    button.danger{background:rgba(255,77,94,.12);border-color:rgba(255,77,94,.35)}
     button:disabled{opacity:.5;cursor:not-allowed}
 
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-    .card{grid-column:span 12;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+    .card{grid-column:span 12;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
     @media(min-width:900px){
       .c6{grid-column:span 6}
       .c4{grid-column:span 4}
       .c8{grid-column:span 8}
-      .c12{grid-column:span 12}
     }
     .kpiTitle{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .lbl{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
-    .val{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:36px;font-weight:900}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px;color:var(--muted);background:rgba(255,255,255,.02)}
+    .kpiTitle .lbl{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .val{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:36px;font-weight:800}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px;color:var(--muted)}
     .pill.ok{color:var(--ok)}
     .pill.bad{color:var(--bad)}
     .row{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:8px 0;border-top:1px solid rgba(255,255,255,.06)}
@@ -57,33 +56,109 @@
 
     table{width:100%;border-collapse:collapse}
     th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}
-    th{color:var(--muted);font-weight:900;text-transform:uppercase;font-size:10px;letter-spacing:.04em}
-    .statusOk{color:var(--ok);font-weight:900}
-    .statusBad{color:var(--bad);font-weight:900}
+    th{color:var(--muted);font-weight:800;text-transform:uppercase;font-size:10px;letter-spacing:.04em}
+    .statusOk{color:var(--ok);font-weight:800}
+    .statusBad{color:var(--bad);font-weight:800}
 
     .banner{display:none;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,77,94,.5);background:rgba(255,77,94,.10);margin:10px 0}
     .banner.show{display:flex}
-    .banner .b1{font-weight:1000}
-    .banner .b2{color:rgba(234,240,255,.85);font-size:13px}
+    .banner .b1{font-weight:900}
+    .banner .b2{color:rgba(234,240,255,.8);font-size:13px}
 
     .toast{position:fixed;right:14px;top:14px;display:flex;flex-direction:column;gap:8px;z-index:50}
-    .toast .t{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;box-shadow:var(--shadow)}
+    .toast .t{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px}
 
-    /* Notifications section */
-    .split{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:900px){ .split{grid-template-columns:1fr 1fr} }
-    .steps{margin:0;padding-left:18px;color:rgba(234,240,255,.9);font-size:13px;line-height:1.5}
-    .code{display:inline-flex;align-items:center;gap:10px;background:var(--chip);border:1px solid rgba(255,255,255,.08);padding:10px 12px;border-radius:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#d8e3ff;word-break:break-all}
-    .mini{font-size:12px;color:rgba(234,240,255,.75)}
-    .btnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    a.linkBtn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;font-weight:800;font-size:13px}
-    a.linkBtn.primary{background:var(--accent);border-color:transparent}
-    .divider{height:1px;background:rgba(255,255,255,.06);margin:12px 0}
+    /* ===== Login modal ===== */
+    .overlay{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:1000;
+    }
+    .overlay.show{display:flex}
+    .loginCard{
+      width:100%;
+      max-width:420px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+    }
+    .loginHead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .loginHead img{width:42px;height:42px;border-radius:12px}
+    .loginHead .h1{font-weight:900}
+    .loginHead .h2{font-size:12px;color:var(--muted)}
+    .field{margin-top:10px}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700}
+    .field input{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.15);
+      color:var(--text);
+      font-size:14px;
+      outline:none;
+    }
+    .field input:focus{border-color:rgba(79,124,255,.7)}
+    .errBox{
+      display:none;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,77,94,.45);
+      background:rgba(255,77,94,.10);
+      color:rgba(234,240,255,.9);
+      font-size:13px;
+    }
+    .errBox.show{display:block}
+    .loginActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .loginActions button{flex:1}
+    .loginNote{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4}
+    .hideApp{display:none}
   </style>
 </head>
 
 <body>
-  <div class="wrap">
+  <!-- Login overlay -->
+  <div class="overlay" id="loginOverlay">
+    <div class="loginCard">
+      <div class="loginHead">
+        <img src="icon-192.png" alt="logo" />
+        <div>
+          <div class="h1">Hasmed Pharmacy Monitor</div>
+          <div class="h2">Sign in to view dashboard</div>
+        </div>
+      </div>
+
+      <div class="errBox" id="loginErr">Invalid login</div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" autocomplete="current-password" required />
+        </div>
+
+        <div class="loginActions">
+          <button class="primary" type="submit" id="btnLogin">Sign In</button>
+          <button type="button" id="btnReset">Send reset email</button>
+        </div>
+
+        <div class="loginNote">
+          Account creation is not exposed on the site. Accounts must be created in Supabase Auth by the administrator.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="wrap" id="appRoot">
     <div class="topbar">
       <div class="brand">
         <img src="icon-192.png" alt="logo" />
@@ -93,6 +168,7 @@
         </div>
       </div>
       <div class="actions">
+        <button id="btnLogout" class="danger">Logout</button>
         <button id="btnAck" class="primary">Acknowledge</button>
         <button id="btnRefresh">Refresh</button>
         <button id="btnCsv">Export CSV (5 years)</button>
@@ -105,48 +181,6 @@
         <div class="b2" id="alertText">Out of range</div>
       </div>
       <div class="pill bad" id="ackState">Not acknowledged</div>
-    </div>
-
-    <!-- Notifications block -->
-    <div class="card c12">
-      <div class="kpiTitle">
-        <div class="lbl">Notifications</div>
-        <div class="pill" id="pillNotify">Ready</div>
-      </div>
-
-      <div class="split">
-        <div>
-          <div style="font-weight:900;margin-bottom:6px">Phone push via ntfy</div>
-          <ol class="steps">
-            <li>Install the ntfy app on the phone.</li>
-            <li>Open the app and subscribe to the topic below.</li>
-            <li>Allow notifications when prompted.</li>
-          </ol>
-          <div style="margin-top:10px" class="code">
-            <span id="ntfyTopicText">hasmed-pharmacy-alerts</span>
-            <button id="btnCopyTopic" title="Copy topic">Copy</button>
-          </div>
-
-          <div class="btnRow">
-            <a class="linkBtn primary" id="btnOpenTopic" target="_blank" rel="noreferrer">Open topic in browser</a>
-            <button id="btnTestNtfy">Send test push</button>
-          </div>
-
-          <div class="mini" style="margin-top:10px">
-            Note: if the phone has battery optimization enabled for ntfy, disable optimization for reliable delivery.
-          </div>
-        </div>
-
-        <div>
-          <div style="font-weight:900;margin-bottom:6px">Optional: Telegram (backup)</div>
-          <div class="mini">This can be added later using a bot bridge (for example CallMeBot). It is not required for the current system.</div>
-          <div class="divider"></div>
-          <div class="mini">Status:</div>
-          <div class="code" style="margin-top:8px">
-            <span>Telegram not enabled</span>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="grid">
@@ -179,7 +213,7 @@
 
       <div class="card c8">
         <div class="chartHead">
-          <div class="lbl" style="font-weight:1000;letter-spacing:.02em">History</div>
+          <div class="lbl" style="font-weight:900;letter-spacing:.02em">History</div>
           <div class="tabs" id="tabs">
             <button data-p="today" class="active">Today</button>
             <button data-p="week">7 days</button>
@@ -204,13 +238,9 @@
   <div class="toast" id="toast"></div>
 
 <script>
-  // ===== CONFIG (unchanged security model) =====
+  // ===================== CONFIG =====================
   const SUPABASE_URL = "https://avxakvxjgpwzctuagaww.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo";
-
-  const NTFY_TOPIC = "hasmed-pharmacy-alerts";
-  const NTFY_SERVER = "https://ntfy.sh";
-
   const AMBIENT_MIN=15, AMBIENT_MAX=25, FRIDGE_MIN=2, FRIDGE_MAX=8;
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -223,9 +253,85 @@
     setTimeout(()=>d.remove(), 3000);
   };
 
-  let period="today";
+  // ===================== LOGIN GATE =====================
   let chart=null;
+  let period="today";
+  let realtimeChannel=null;
 
+  function showLogin(show){
+    $("loginOverlay").classList.toggle("show", !!show);
+    $("appRoot").classList.toggle("hideApp", !!show);
+  }
+
+  function setLoginError(msg){
+    const el = $("loginErr");
+    if (!msg){ el.classList.remove("show"); el.textContent=""; return; }
+    el.textContent = msg;
+    el.classList.add("show");
+  }
+
+  async function ensureSessionAndStart(){
+    const { data } = await sb.auth.getSession();
+    const hasSession = !!(data && data.session);
+
+    if (!hasSession){
+      showLogin(true);
+      return;
+    }
+
+    showLogin(false);
+    await startApp();
+  }
+
+  $("loginForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    setLoginError("");
+
+    const email = $("email").value.trim();
+    const password = $("password").value;
+
+    $("btnLogin").disabled = true;
+    try{
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      if (!data || !data.session) throw new Error("Login failed");
+      toast("Signed in");
+      showLogin(false);
+      await startApp();
+    }catch(err){
+      setLoginError(err.message || "Login failed");
+    }finally{
+      $("btnLogin").disabled = false;
+    }
+  });
+
+  $("btnReset").addEventListener("click", async ()=>{
+    setLoginError("");
+    const email = $("email").value.trim();
+    if (!email){ setLoginError("Enter email first"); return; }
+    try{
+      const { error } = await sb.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      toast("Reset email sent");
+    }catch(err){
+      setLoginError(err.message || "Reset failed");
+    }
+  });
+
+  $("btnLogout").addEventListener("click", async ()=>{
+    try{
+      await sb.auth.signOut();
+      toast("Logged out");
+    }finally{
+      if (realtimeChannel){
+        try{ await sb.removeChannel(realtimeChannel); }catch{}
+        realtimeChannel=null;
+      }
+      showLogin(true);
+    }
+  });
+
+  // ===================== DASHBOARD =====================
   function fmt(n){ return (Number.isFinite(n) ? n.toFixed(1) : "--.-"); }
   function isBadAmbient(x){ return x<AMBIENT_MIN || x>AMBIENT_MAX; }
   function isBadFridge(x){ return x<FRIDGE_MIN || x>FRIDGE_MAX; }
@@ -282,11 +388,6 @@
     $("ackState").classList.toggle("bad", !ack);
 
     $("btnAck").disabled = ack || !active;
-
-    // banner details
-    if (active) {
-      $("alertText").textContent = ack ? "Alert acknowledged. Monitoring continues." : "Action required. Acknowledge once aware.";
-    }
   }
 
   async function ack(){
@@ -441,29 +542,6 @@
     toast("Export complete: " + total + " rows");
   }
 
-  async function sendNtfyTest(){
-    $("pillNotify").textContent = "Sending test...";
-    try{
-      const res = await fetch(`${NTFY_SERVER}/${NTFY_TOPIC}`,{
-        method:"POST",
-        headers:{
-          "Title":"Hasmed Monitor Test",
-          "Priority":"high",
-          "Tags":"test,thermometer"
-        },
-        body:`Test notification at ${new Date().toLocaleString()}`
-      });
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      toast("Test sent. Check phone.");
-      $("pillNotify").textContent = "Test sent";
-      $("pillNotify").classList.add("ok");
-    }catch(e){
-      toast("Test failed");
-      $("pillNotify").textContent = "Test failed";
-      $("pillNotify").classList.add("bad");
-    }
-  }
-
   async function refreshAll(){
     await loadCounts();
     await loadLatest();
@@ -472,11 +550,36 @@
     await loadTable();
   }
 
-  // UI wiring
+  async function startRealtime(){
+    if (realtimeChannel){
+      try{ await sb.removeChannel(realtimeChannel); }catch{}
+      realtimeChannel=null;
+    }
+
+    realtimeChannel = sb.channel("readings")
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"temperature_readings"}, async ()=> {
+        await loadLatest();
+        if (period==="today") await loadSeries();
+        await loadTable();
+      });
+
+    realtimeChannel.subscribe();
+  }
+
+  async function startApp(){
+    if (!chart) initChart();
+
+    await refreshAll();
+    await startRealtime();
+
+    if (!window._alertPoll){
+      window._alertPoll = setInterval(loadAlertState, 5000);
+    }
+  }
+
   $("btnAck").addEventListener("click", ack);
   $("btnRefresh").addEventListener("click", ()=>{ toast("Refreshing"); refreshAll(); });
   $("btnCsv").addEventListener("click", ()=> exportCSVYears(5));
-  $("btnTestNtfy").addEventListener("click", sendNtfyTest);
 
   $("tabs").addEventListener("click", (e)=>{
     const b = e.target.closest("button");
@@ -487,36 +590,15 @@
     loadSeries();
   });
 
-  // Notifications helpers
-  $("ntfyTopicText").textContent = NTFY_TOPIC;
-  $("btnOpenTopic").href = `${NTFY_SERVER}/${NTFY_TOPIC}`;
-
-  $("btnCopyTopic").addEventListener("click", async ()=>{
-    try{
-      await navigator.clipboard.writeText(NTFY_TOPIC);
-      toast("Topic copied");
-    }catch{
-      toast("Copy failed");
+  // Keep UI in sync if session expires
+  sb.auth.onAuthStateChange((_event, session)=>{
+    if (!session){
+      showLogin(true);
     }
   });
 
-  // Start
-  (async ()=>{
-    initChart();
-    await refreshAll();
-
-    // Realtime UI updates
-    sb.channel("readings")
-      .on("postgres_changes",{event:"INSERT",schema:"public",table:"temperature_readings"}, async ()=> {
-        await loadLatest();
-        if (period==="today") await loadSeries();
-        await loadTable();
-      })
-      .subscribe();
-
-    // Poll alert state
-    setInterval(loadAlertState, 5000);
-  })();
+  // Boot
+  ensureSessionAndStart();
 </script>
 </body>
 </html>
