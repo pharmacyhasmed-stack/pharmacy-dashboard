@@ -4,766 +4,184 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0a0a0f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Hasmed Monitor">
-  <meta name="description" content="Hasmed Pharmacy Temperature Monitoring System">
-  
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  
   <title>Hasmed Pharmacy Monitor</title>
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0a0a0f;--bg2:#1a1a2e;--bg3:#12121a;--border:#2a2a4a;--text:#fff;--text2:#a0a0b0;--blue:#4361ee;--cyan:#4cc9f0;--green:#00d9a5;--red:#e94560;--yellow:#ffd166}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
     
-    :root {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #1a1a2e;
-      --bg-tertiary: #12121a;
-      --border: #2a2a4a;
-      --text-primary: #ffffff;
-      --text-secondary: #a0a0b0;
-      --accent-blue: #4361ee;
-      --accent-cyan: #4cc9f0;
-      --accent-green: #00d9a5;
-      --accent-red: #e94560;
-      --accent-yellow: #ffd166;
-    }
+    .install-banner{display:none;background:linear-gradient(135deg,var(--blue),var(--cyan));padding:12px 20px;align-items:center;justify-content:space-between;gap:10px}
+    .install-banner.show{display:flex}
+    .install-banner button{background:#fff;color:var(--blue);border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer}
     
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    .login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:5000;padding:20px}
+    .login-overlay.hidden{display:none}
+    .login-card{background:var(--bg2);border-radius:20px;padding:40px;width:100%;max-width:400px;border:1px solid var(--border);text-align:center}
+    .login-logo{width:100px;height:100px;margin:0 auto 20px;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:48px}
+    .login-logo img{width:80%;height:80%;object-fit:contain}
+    .login-card h1{font-size:1.5rem;margin-bottom:8px;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .login-card>p{color:var(--text2);margin-bottom:30px}
+    .login-input{width:100%;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;margin-bottom:15px}
+    .login-input:focus{outline:none;border-color:var(--blue)}
+    .login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),var(--cyan));border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px}
+    .login-btn:disabled{opacity:0.6;cursor:not-allowed}
+    .demo-btn{width:100%;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer}
+    .login-error{background:rgba(233,69,96,0.15);border:1px solid var(--red);color:var(--red);padding:12px;border-radius:10px;margin-bottom:15px;display:none}
+    .login-error.show{display:block}
+    .login-status{color:var(--text2);font-size:12px;margin-top:15px}
     
-    /* ===== INSTALL BANNER ===== */
-    .install-banner {
-      display: none;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-      padding: 12px 20px;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .install-banner.show { display: flex; }
-    .install-banner p { font-size: 14px; font-weight: 500; }
-    .install-btn {
-      background: white;
-      color: var(--accent-blue);
-      border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .close-install {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-      padding: 0 8px;
-    }
+    .loading-overlay{position:fixed;inset:0;background:rgba(10,10,15,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:4000}
+    .loading-overlay.hidden{display:none}
+    .spinner{width:50px;height:50px;border:4px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
+    @keyframes spin{to{transform:rotate(360deg)}}
     
-    /* ===== LOGIN OVERLAY ===== */
-    .login-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--bg-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 5000;
-      padding: 20px;
-    }
-    .login-overlay.hidden { display: none; }
+    .toast-container{position:fixed;top:20px;right:20px;z-index:9999}
+    .toast{background:var(--bg2);border:1px solid var(--border);padding:14px 18px;border-radius:12px;margin-bottom:10px;min-width:280px;animation:slideIn 0.3s;display:flex;align-items:center;gap:10px}
+    .toast.success{border-left:4px solid var(--green)}
+    .toast.error{border-left:4px solid var(--red)}
+    .toast.info{border-left:4px solid var(--blue)}
+    @keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
     
-    .login-card {
-      background: var(--bg-secondary);
-      border-radius: 24px;
-      padding: 40px;
-      width: 100%;
-      max-width: 400px;
-      border: 1px solid var(--border);
-      text-align: center;
-    }
+    .alert-banner{display:none;background:linear-gradient(135deg,var(--red),#ff6b6b);padding:16px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;animation:alertPulse 2s infinite}
+    .alert-banner.show{display:flex}
+    @keyframes alertPulse{0%,100%{opacity:1}50%{opacity:0.85}}
+    .alert-info{display:flex;align-items:center;gap:12px}
+    .alert-info .icon{font-size:32px}
+    .alert-info strong{display:block;font-size:16px}
+    .alert-info small{font-size:13px;opacity:0.9}
+    .ack-btn{background:#fff;color:var(--red);border:none;padding:12px 24px;border-radius:10px;font-weight:600;cursor:pointer}
+    .ack-btn:disabled{opacity:0.6;cursor:not-allowed}
     
-    .login-logo {
-      width: 100px;
-      height: 100px;
-      margin: 0 auto 20px;
-      border-radius: 24px;
-      overflow: hidden;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .login-logo img {
-      width: 80%;
-      height: 80%;
-      object-fit: contain;
-    }
-    .login-logo-fallback {
-      font-size: 50px;
-    }
+    .header{background:linear-gradient(135deg,var(--bg3),var(--bg2));padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:15px}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo-icon{width:48px;height:48px;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:24px}
+    .logo-icon img{width:80%;height:80%;object-fit:contain}
+    .logo-text h1{font-size:1.2rem;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .logo-text small{color:var(--text2);font-size:0.75rem}
+    .header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .status-badge{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg2);border-radius:20px;font-size:13px;border:1px solid var(--border)}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+    .status-dot.connected{background:var(--green);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,217,165,0.5)}50%{box-shadow:0 0 0 8px rgba(0,217,165,0)}}
     
-    .login-card h1 {
-      font-size: 1.5rem;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .login-card > p {
-      color: var(--text-secondary);
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
+    .btn{padding:10px 16px;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+    .btn-primary{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff}
+    .btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+    .btn-danger{background:var(--red);color:#fff}
+    .btn-success{background:var(--green);color:#fff}
     
-    .input-group {
-      margin-bottom: 15px;
-      text-align: left;
-    }
-    .input-group label {
-      display: block;
-      color: var(--text-secondary);
-      font-size: 12px;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 14px 16px;
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text-primary);
-      font-size: 16px;
-      transition: border-color 0.3s;
-    }
-    .input-group input:focus {
-      outline: none;
-      border-color: var(--accent-blue);
-    }
+    .notif-card{background:var(--bg2);margin:20px;padding:20px;border-radius:16px;border:1px solid var(--border)}
+    .notif-card h3{font-size:14px;margin-bottom:15px;color:var(--cyan)}
+    .notif-row{display:flex;align-items:center;gap:15px;padding:15px;background:var(--bg3);border-radius:12px;margin-bottom:15px}
+    .notif-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+    .notif-icon.pending{background:rgba(255,209,102,0.15)}
+    .notif-icon.enabled{background:rgba(0,217,165,0.15)}
+    .notif-icon.blocked{background:rgba(233,69,96,0.15)}
+    .notif-text{flex:1}
+    .notif-text strong{display:block;font-size:15px;margin-bottom:4px}
+    .notif-text span{font-size:13px;color:var(--text2)}
+    .notif-btns{display:flex;gap:10px;flex-wrap:wrap}
     
-    .login-btn {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 12px;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .login-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
-    }
+    .main{padding:20px;max-width:1400px;margin:0 auto}
+    .temp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:20px}
+    .card{background:var(--bg2);border-radius:20px;padding:25px;border:1px solid var(--border);transition:all 0.3s}
+    .card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(0,0,0,0.3)}
+    .card.alert{border-color:var(--red);animation:cardAlert 1.5s infinite}
+    @keyframes cardAlert{0%,100%{box-shadow:0 0 20px rgba(233,69,96,0.3)}50%{box-shadow:0 0 40px rgba(233,69,96,0.5)}}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .card-label{color:var(--text2);font-size:12px;text-transform:uppercase;letter-spacing:1px}
+    .card-icon{font-size:28px}
+    .temp-value{font-size:3.5rem;font-weight:700;margin-bottom:15px;font-family:'Courier New',monospace}
+    .temp-value.normal{background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .temp-value.alert{background:linear-gradient(135deg,var(--red),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .temp-range{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text2)}
+    .range-bar{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+    .range-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--cyan));transition:width 0.5s}
+    .range-fill.alert{background:linear-gradient(90deg,var(--yellow),var(--red))}
+    .card-stats{margin-top:20px;padding-top:15px;border-top:1px solid var(--border)}
+    .stat-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px}
+    .stat-row .label{color:var(--text2)}
     
-    .demo-btn {
-      width: 100%;
-      padding: 14px;
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text-primary);
-      font-size: 14px;
-      cursor: pointer;
-    }
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px}
+    .stat-card{background:var(--bg2);border-radius:16px;padding:20px;text-align:center;border:1px solid var(--border)}
+    .stat-card .label{font-size:11px;color:var(--text2);text-transform:uppercase;margin-bottom:8px}
+    .stat-card .value{font-size:1.5rem;font-weight:600}
     
-    .login-error {
-      background: rgba(233, 69, 96, 0.15);
-      border: 1px solid var(--accent-red);
-      color: var(--accent-red);
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      font-size: 14px;
-      display: none;
-    }
-    .login-error.show { display: block; }
+    .chart-section{background:var(--bg2);border-radius:20px;padding:25px;border:1px solid var(--border);margin-bottom:20px}
+    .chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:15px}
+    .chart-title{font-size:16px}
+    .chart-tabs{display:flex;gap:5px;background:var(--bg3);padding:4px;border-radius:10px}
+    .chart-tab{padding:8px 18px;border:none;background:transparent;color:var(--text2);border-radius:8px;cursor:pointer;font-size:13px}
+    .chart-tab.active{background:var(--blue);color:#fff}
+    .chart-container{height:300px}
     
-    /* ===== LOADING OVERLAY ===== */
-    .loading-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(10, 10, 15, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 4000;
-    }
-    .loading-overlay.hidden { display: none; }
+    .table-section{background:var(--bg2);border-radius:20px;padding:25px;border:1px solid var(--border);overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:14px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
+    th{color:var(--text2);font-size:11px;text-transform:uppercase;background:var(--bg3)}
+    .badge{display:inline-block;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600}
+    .badge.ok{background:rgba(0,217,165,0.15);color:var(--green)}
+    .badge.alert{background:rgba(233,69,96,0.15);color:var(--red)}
     
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid var(--border);
-      border-top-color: var(--accent-blue);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .footer{text-align:center;padding:30px 20px;color:var(--text2);font-size:13px;border-top:1px solid var(--border);margin-top:30px}
+    .footer-logo{width:40px;height:40px;margin:0 auto 10px;border-radius:10px;overflow:hidden}
+    .footer-logo img{width:100%;height:100%;object-fit:contain}
     
-    /* ===== TOAST NOTIFICATIONS ===== */
-    .toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-    }
-    .toast {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      padding: 14px 18px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      min-width: 280px;
-      animation: slideIn 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-    }
-    .toast.success { border-left: 4px solid var(--accent-green); }
-    .toast.error { border-left: 4px solid var(--accent-red); }
-    .toast.info { border-left: 4px solid var(--accent-blue); }
-    .toast.warning { border-left: 4px solid var(--accent-yellow); }
-    @keyframes slideIn {
-      from { transform: translateX(120%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    
-    /* ===== ALERT BANNER ===== */
-    .alert-banner {
-      display: none;
-      background: linear-gradient(135deg, var(--accent-red), #ff6b6b);
-      padding: 16px 20px;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 15px;
-      animation: alertPulse 2s infinite;
-    }
-    .alert-banner.show { display: flex; }
-    @keyframes alertPulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.85; }
-    }
-    
-    .alert-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .alert-info .icon { font-size: 32px; }
-    .alert-info strong { display: block; font-size: 16px; }
-    .alert-info small { font-size: 13px; opacity: 0.9; }
-    
-    .ack-btn {
-      background: white;
-      color: var(--accent-red);
-      border: none;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .ack-btn:hover { transform: scale(1.05); }
-    .ack-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    
-    /* ===== HEADER ===== */
-    .header {
-      background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .logo-icon img {
-      width: 80%;
-      height: 80%;
-      object-fit: contain;
-    }
-    .logo-icon-fallback { font-size: 24px; }
-    
-    .logo-text h1 {
-      font-size: 1.2rem;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .logo-text small {
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-    }
-    
-    .header-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      background: var(--bg-secondary);
-      border-radius: 20px;
-      font-size: 13px;
-      border: 1px solid var(--border);
-    }
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent-red);
-    }
-    .status-dot.connected {
-      background: var(--accent-green);
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 217, 165, 0.5); }
-      50% { box-shadow: 0 0 0 8px rgba(0, 217, 165, 0); }
-    }
-    
-    .btn {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-      color: white;
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
-    }
-    .btn-secondary {
-      background: var(--bg-tertiary);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-    .btn-danger {
-      background: var(--accent-red);
-      color: white;
-    }
-    .btn-success {
-      background: var(--accent-green);
-      color: white;
-    }
-    
-    /* ===== NOTIFICATION CARD ===== */
-    .notif-card {
-      background: var(--bg-secondary);
-      margin: 20px;
-      padding: 20px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-    }
-    .notif-card h3 {
-      font-size: 14px;
-      margin-bottom: 15px;
-      color: var(--accent-cyan);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .notif-row {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 15px;
-      background: var(--bg-tertiary);
-      border-radius: 12px;
-      margin-bottom: 15px;
-    }
-    
-    .notif-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      flex-shrink: 0;
-    }
-    .notif-icon.pending { background: rgba(255, 209, 102, 0.15); }
-    .notif-icon.enabled { background: rgba(0, 217, 165, 0.15); }
-    .notif-icon.blocked { background: rgba(233, 69, 96, 0.15); }
-    
-    .notif-text { flex: 1; }
-    .notif-text strong { display: block; font-size: 15px; margin-bottom: 4px; }
-    .notif-text span { font-size: 13px; color: var(--text-secondary); }
-    
-    .notif-btns {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    
-    /* ===== MAIN CONTENT ===== */
-    .main {
-      padding: 20px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    
-    /* ===== TEMPERATURE CARDS ===== */
-    .temp-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .card {
-      background: var(--bg-secondary);
-      border-radius: 20px;
-      padding: 25px;
-      border: 1px solid var(--border);
-      transition: all 0.3s;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-    }
-    .card.alert {
-      border-color: var(--accent-red);
-      animation: cardAlert 1.5s infinite;
-    }
-    @keyframes cardAlert {
-      0%, 100% { box-shadow: 0 0 20px rgba(233, 69, 96, 0.3); }
-      50% { box-shadow: 0 0 40px rgba(233, 69, 96, 0.5); }
-    }
-    
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .card-label {
-      color: var(--text-secondary);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .card-icon { font-size: 28px; }
-    
-    .temp-value {
-      font-size: 3.5rem;
-      font-weight: 700;
-      margin-bottom: 15px;
-      font-family: 'Courier New', monospace;
-    }
-    .temp-value.normal {
-      background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .temp-value.alert {
-      background: linear-gradient(135deg, var(--accent-red), var(--accent-yellow));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    
-    .temp-range {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-    .range-bar {
-      flex: 1;
-      height: 8px;
-      background: var(--bg-tertiary);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .range-fill {
-      height: 100%;
-      border-radius: 4px;
-      background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
-      transition: width 0.5s;
-    }
-    .range-fill.alert {
-      background: linear-gradient(90deg, var(--accent-yellow), var(--accent-red));
-    }
-    
-    .card-stats {
-      margin-top: 20px;
-      padding-top: 15px;
-      border-top: 1px solid var(--border);
-    }
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      font-size: 13px;
-    }
-    .stat-row .label { color: var(--text-secondary); }
-    
-    /* ===== STATS GRID ===== */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .stat-card {
-      background: var(--bg-secondary);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-    .stat-card .label {
-      font-size: 11px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-    .stat-card .value {
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-    
-    /* ===== CHART ===== */
-    .chart-section {
-      background: var(--bg-secondary);
-      border-radius: 20px;
-      padding: 25px;
-      border: 1px solid var(--border);
-      margin-bottom: 20px;
-    }
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    .chart-title { font-size: 16px; }
-    .chart-tabs {
-      display: flex;
-      gap: 5px;
-      background: var(--bg-tertiary);
-      padding: 4px;
-      border-radius: 10px;
-    }
-    .chart-tab {
-      padding: 8px 18px;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-    .chart-tab.active {
-      background: var(--accent-blue);
-      color: white;
-    }
-    .chart-tab:hover:not(.active) {
-      background: rgba(67, 97, 238, 0.2);
-    }
-    .chart-container { height: 300px; }
-    
-    /* ===== TABLE ===== */
-    .table-section {
-      background: var(--bg-secondary);
-      border-radius: 20px;
-      padding: 25px;
-      border: 1px solid var(--border);
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 14px 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-    th {
-      color: var(--text-secondary);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      background: var(--bg-tertiary);
-    }
-    tr:hover td {
-      background: rgba(67, 97, 238, 0.05);
-    }
-    
-    .badge {
-      display: inline-block;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .badge.ok {
-      background: rgba(0, 217, 165, 0.15);
-      color: var(--accent-green);
-    }
-    .badge.alert {
-      background: rgba(233, 69, 96, 0.15);
-      color: var(--accent-red);
-    }
-    
-    /* ===== FOOTER ===== */
-    .footer {
-      text-align: center;
-      padding: 30px 20px;
-      color: var(--text-secondary);
-      font-size: 13px;
-      border-top: 1px solid var(--border);
-      margin-top: 30px;
-    }
-    .footer-logo {
-      width: 40px;
-      height: 40px;
-      margin: 0 auto 10px;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .footer-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .header { padding: 12px 15px; }
-      .main { padding: 15px; }
-      .temp-value { font-size: 2.8rem; }
-      .temp-grid { grid-template-columns: 1fr; }
-      .notif-card { margin: 15px; padding: 15px; }
-      .chart-container { height: 250px; }
-    }
+    @media(max-width:768px){.header{padding:12px 15px}.main{padding:15px}.temp-value{font-size:2.8rem}.temp-grid{grid-template-columns:1fr}.notif-card{margin:15px;padding:15px}}
   </style>
 </head>
 <body>
 
-<!-- Install PWA Banner -->
 <div class="install-banner" id="installBanner">
-  <p>📱 Install app for push notifications</p>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <button class="install-btn" id="installBtn">Install App</button>
-    <button class="close-install" onclick="document.getElementById('installBanner').classList.remove('show')">×</button>
-  </div>
+  <span>📱 Install app for push notifications</span>
+  <button id="installBtn">Install App</button>
 </div>
 
-<!-- Login Overlay -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
-    <div class="login-logo">
-      <img src="icon-192.png" alt="Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-      <div class="login-logo-fallback" style="display:none;">🌡️</div>
-    </div>
+    <div class="login-logo" id="loginLogo">🌡️</div>
     <h1>Hasmed Pharmacy</h1>
     <p>Temperature Monitoring System</p>
-    
     <div class="login-error" id="loginError">Invalid password</div>
-    
     <form id="loginForm">
-      <div class="input-group">
-        <label>Password</label>
-        <input type="password" id="passwordInput" placeholder="Enter password" required autocomplete="current-password">
-      </div>
-      <button type="submit" class="login-btn">🔐 Login</button>
+      <input type="password" class="login-input" id="passwordInput" placeholder="Enter password" required autocomplete="current-password">
+      <button type="submit" class="login-btn" id="loginBtn">🔐 Login</button>
     </form>
-    
-    <button class="demo-btn" onclick="demoLogin()">👀 Demo Mode (View Only)</button>
+    <button class="demo-btn" id="demoBtn">👀 Demo Mode</button>
+    <div class="login-status" id="loginStatus">Checking connection...</div>
   </div>
 </div>
 
-<!-- Loading Overlay -->
-<div class="loading-overlay" id="loadingOverlay">
+<div class="loading-overlay hidden" id="loadingOverlay">
   <div class="spinner"></div>
-  <p style="color:var(--text-secondary)">Connecting to database...</p>
+  <p style="color:var(--text2)" id="loadingText">Loading dashboard...</p>
 </div>
 
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- Alert Banner -->
 <div class="alert-banner" id="alertBanner">
   <div class="alert-info">
     <span class="icon">🚨</span>
     <div>
       <strong>TEMPERATURE ALERT!</strong>
-      <small id="alertDetails">Check temperatures immediately</small>
+      <small id="alertDetails">Check temperatures</small>
     </div>
   </div>
-  <button class="ack-btn" id="ackBtn" onclick="acknowledgeAlert()">✓ Acknowledge</button>
+  <button class="ack-btn" id="ackBtn">✓ Acknowledge</button>
 </div>
 
-<!-- Header -->
 <header class="header">
   <div class="logo">
-    <div class="logo-icon">
-      <img src="icon-192.png" alt="Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-      <div class="logo-icon-fallback" style="display:none;">🌡️</div>
-    </div>
+    <div class="logo-icon">🌡️</div>
     <div class="logo-text">
       <h1>Hasmed Pharmacy</h1>
       <small id="userDisplay">Temperature Monitor</small>
@@ -772,33 +190,30 @@
   <div class="header-actions">
     <div class="status-badge">
       <div class="status-dot" id="statusDot"></div>
-      <span id="statusText">Connecting</span>
+      <span id="statusText">Offline</span>
     </div>
-    <button class="btn btn-secondary" onclick="refreshData()" title="Refresh">🔄</button>
-    <button class="btn btn-primary" onclick="downloadCSV()" title="Export CSV">📥 Export</button>
-    <button class="btn btn-danger" id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+    <button class="btn btn-secondary" id="refreshBtn">🔄</button>
+    <button class="btn btn-primary" id="downloadBtn">📥</button>
+    <button class="btn btn-danger" id="logoutBtn" style="display:none">Logout</button>
   </div>
 </header>
 
-<!-- Notification Card -->
-<div class="notif-card" id="notifCard">
+<div class="notif-card">
   <h3>🔔 Push Notifications</h3>
   <div class="notif-row">
     <div class="notif-icon pending" id="notifIcon">🔔</div>
     <div class="notif-text">
       <strong id="notifTitle">Enable Notifications</strong>
-      <span id="notifDesc">Get instant alerts when temperatures go out of range</span>
+      <span id="notifDesc">Get alerts when temperatures go out of range</span>
     </div>
   </div>
   <div class="notif-btns">
-    <button class="btn btn-success" id="enableNotifBtn" onclick="enableNotifications()">🔔 Enable Notifications</button>
-    <button class="btn btn-secondary" onclick="testNotification()">🧪 Test</button>
+    <button class="btn btn-success" id="enableNotifBtn">🔔 Enable</button>
+    <button class="btn btn-secondary" id="testNotifBtn">🧪 Test</button>
   </div>
 </div>
 
-<!-- Main Content -->
 <main class="main">
-  <!-- Temperature Cards -->
   <div class="temp-grid">
     <div class="card" id="ambientCard">
       <div class="card-header">
@@ -812,8 +227,8 @@
         <span>25°C</span>
       </div>
       <div class="card-stats">
-        <div class="stat-row"><span class="label">Min Today</span><span id="ambientMin" style="color:var(--accent-cyan)">--.-°C</span></div>
-        <div class="stat-row"><span class="label">Max Today</span><span id="ambientMax" style="color:var(--accent-cyan)">--.-°C</span></div>
+        <div class="stat-row"><span class="label">Min Today</span><span id="ambientMin" style="color:var(--cyan)">--.-°C</span></div>
+        <div class="stat-row"><span class="label">Max Today</span><span id="ambientMax" style="color:var(--cyan)">--.-°C</span></div>
       </div>
     </div>
     
@@ -829,8 +244,8 @@
         <span>8°C</span>
       </div>
       <div class="card-stats">
-        <div class="stat-row"><span class="label">Min Today</span><span id="fridgeMin" style="color:var(--accent-blue)">--.-°C</span></div>
-        <div class="stat-row"><span class="label">Max Today</span><span id="fridgeMax" style="color:var(--accent-blue)">--.-°C</span></div>
+        <div class="stat-row"><span class="label">Min Today</span><span id="fridgeMin" style="color:var(--blue)">--.-°C</span></div>
+        <div class="stat-row"><span class="label">Max Today</span><span id="fridgeMax" style="color:var(--blue)">--.-°C</span></div>
       </div>
     </div>
     
@@ -841,347 +256,227 @@
       </div>
       <div class="stat-row"><span class="label">Last Update</span><span id="lastUpdate">--:--</span></div>
       <div class="stat-row"><span class="label">WiFi Signal</span><span id="wifiSignal">-- dBm</span></div>
-      <div class="stat-row"><span class="label">Alerts Today</span><span id="todayAlerts" style="color:var(--accent-yellow)">0</span></div>
-      <div class="stat-row"><span class="label">Alert Status</span><span id="alertStatus" style="color:var(--accent-green)">Normal</span></div>
+      <div class="stat-row"><span class="label">Alerts Today</span><span id="todayAlerts" style="color:var(--yellow)">0</span></div>
+      <div class="stat-row"><span class="label">Alert Status</span><span id="alertStatus" style="color:var(--green)">Normal</span></div>
       <div class="stat-row"><span class="label">Total Records</span><span id="totalRecords">--</span></div>
     </div>
   </div>
   
-  <!-- Stats -->
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="label">Avg Ambient</div>
-      <div class="value" style="color:var(--accent-cyan)" id="avgAmbient">--.-°C</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Avg Fridge</div>
-      <div class="value" style="color:var(--accent-blue)" id="avgFridge">--.-°C</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">This Week</div>
-      <div class="value" id="weekCount">--</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">This Month</div>
-      <div class="value" id="monthCount">--</div>
-    </div>
+    <div class="stat-card"><div class="label">Avg Ambient</div><div class="value" style="color:var(--cyan)" id="avgAmbient">--.-°C</div></div>
+    <div class="stat-card"><div class="label">Avg Fridge</div><div class="value" style="color:var(--blue)" id="avgFridge">--.-°C</div></div>
+    <div class="stat-card"><div class="label">This Week</div><div class="value" id="weekCount">--</div></div>
+    <div class="stat-card"><div class="label">This Month</div><div class="value" id="monthCount">--</div></div>
   </div>
   
-  <!-- Chart -->
   <div class="chart-section">
     <div class="chart-header">
       <h2 class="chart-title">📊 Temperature History</h2>
-      <div class="chart-tabs">
-        <button class="chart-tab active" onclick="loadChart('daily', this)">Today</button>
-        <button class="chart-tab" onclick="loadChart('weekly', this)">Week</button>
-        <button class="chart-tab" onclick="loadChart('monthly', this)">Month</button>
+      <div class="chart-tabs" id="chartTabs">
+        <button class="chart-tab active" data-period="daily">Today</button>
+        <button class="chart-tab" data-period="weekly">Week</button>
+        <button class="chart-tab" data-period="monthly">Month</button>
       </div>
     </div>
     <div class="chart-container"><canvas id="tempChart"></canvas></div>
   </div>
   
-  <!-- Table -->
   <div class="table-section">
     <div class="chart-header">
       <h2 class="chart-title">📋 Recent Readings</h2>
-      <span style="color:var(--text-secondary);font-size:13px;">Last 25 readings</span>
     </div>
     <table>
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Ambient</th>
-          <th>Fridge</th>
-          <th>WiFi</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="readingsTable">
-        <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-secondary)">Loading...</td></tr>
-      </tbody>
+      <thead><tr><th>Time</th><th>Ambient</th><th>Fridge</th><th>WiFi</th><th>Status</th></tr></thead>
+      <tbody id="readingsTable"><tr><td colspan="5" style="text-align:center;padding:40px">Loading...</td></tr></tbody>
     </table>
   </div>
 </main>
 
-<!-- Footer -->
 <footer class="footer">
-  <div class="footer-logo">
-    <img src="icon-192.png" alt="Logo" onerror="this.parentElement.innerHTML='🌡️'">
-  </div>
   <p><strong>Hasmed Pharmacy</strong></p>
   <p>Temperature Monitoring System</p>
-  <p style="margin-top:10px;font-size:12px;opacity:0.7;">Auto-refreshes every 30 seconds</p>
 </footer>
 
 <script>
-// ===================== CONFIGURATION =====================
-const SUPABASE_URL = 'https://avxakvxjgpwzctuagaww.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo';
+// ==================== CONFIG ====================
+const CONFIG = {
+  SUPABASE_URL: 'https://avxakvxjgpwzctuagaww.supabase.co',
+  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo',
+  PASSWORD: 'pharmacy123',
+  VAPID_PUBLIC_KEY: 'BB_t9DQDs-Gn4II1pVihik9Fgr5toyuKObjpasPCrlH2cBOfr_1FP4PVPmjmLli_AK17sH7DpKmK4wr85_15Isw',
+  AMBIENT_MIN: 15,
+  AMBIENT_MAX: 25,
+  FRIDGE_MIN: 2,
+  FRIDGE_MAX: 8
+};
 
-const PASSWORD = 'pharmacy123';  // Change this!
-
-const AMBIENT_MIN = 15, AMBIENT_MAX = 25;
-const FRIDGE_MIN = 2, FRIDGE_MAX = 8;
-
-const VAPID_PUBLIC_KEY = 'BB_t9DQDs-Gn4II1pVihik9Fgr5toyuKObjpasPCrlH2cBOfr_1FP4PVPmjmLli_AK17sH7DpKmK4wr85_15Isw';
-
-// ===================== STATE =====================
+// ==================== STATE ====================
 let sb = null;
 let chart = null;
 let swReg = null;
 let isLoggedIn = false;
 let isDemoMode = false;
 let deferredPrompt = null;
+let isConnected = false;
 
-// ===================== UTILITIES =====================
+// ==================== DOM ELEMENTS ====================
+const elements = {
+  loginOverlay: document.getElementById('loginOverlay'),
+  loadingOverlay: document.getElementById('loadingOverlay'),
+  loadingText: document.getElementById('loadingText'),
+  loginForm: document.getElementById('loginForm'),
+  loginBtn: document.getElementById('loginBtn'),
+  demoBtn: document.getElementById('demoBtn'),
+  passwordInput: document.getElementById('passwordInput'),
+  loginError: document.getElementById('loginError'),
+  loginStatus: document.getElementById('loginStatus'),
+  logoutBtn: document.getElementById('logoutBtn'),
+  userDisplay: document.getElementById('userDisplay'),
+  statusDot: document.getElementById('statusDot'),
+  statusText: document.getElementById('statusText'),
+  alertBanner: document.getElementById('alertBanner'),
+  alertDetails: document.getElementById('alertDetails'),
+  ackBtn: document.getElementById('ackBtn'),
+  alertStatus: document.getElementById('alertStatus'),
+  toastContainer: document.getElementById('toastContainer'),
+  installBanner: document.getElementById('installBanner'),
+  installBtn: document.getElementById('installBtn'),
+  refreshBtn: document.getElementById('refreshBtn'),
+  downloadBtn: document.getElementById('downloadBtn'),
+  enableNotifBtn: document.getElementById('enableNotifBtn'),
+  testNotifBtn: document.getElementById('testNotifBtn'),
+  notifIcon: document.getElementById('notifIcon'),
+  notifTitle: document.getElementById('notifTitle'),
+  notifDesc: document.getElementById('notifDesc'),
+  chartTabs: document.getElementById('chartTabs'),
+  // Temperature displays
+  ambientTemp: document.getElementById('ambientTemp'),
+  fridgeTemp: document.getElementById('fridgeTemp'),
+  ambientCard: document.getElementById('ambientCard'),
+  fridgeCard: document.getElementById('fridgeCard'),
+  ambientBar: document.getElementById('ambientBar'),
+  fridgeBar: document.getElementById('fridgeBar'),
+  ambientMin: document.getElementById('ambientMin'),
+  ambientMax: document.getElementById('ambientMax'),
+  fridgeMin: document.getElementById('fridgeMin'),
+  fridgeMax: document.getElementById('fridgeMax'),
+  avgAmbient: document.getElementById('avgAmbient'),
+  avgFridge: document.getElementById('avgFridge'),
+  lastUpdate: document.getElementById('lastUpdate'),
+  wifiSignal: document.getElementById('wifiSignal'),
+  todayAlerts: document.getElementById('todayAlerts'),
+  totalRecords: document.getElementById('totalRecords'),
+  weekCount: document.getElementById('weekCount'),
+  monthCount: document.getElementById('monthCount'),
+  readingsTable: document.getElementById('readingsTable')
+};
+
+// ==================== UTILITIES ====================
 function showToast(msg, type = 'info') {
-  const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  const icons = { success: '✓', error: '✗', warning: '⚠', info: 'ℹ' };
-  toast.innerHTML = `<span>${icons[type] || 'ℹ'}</span><span>${msg}</span>`;
-  container.appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(100%)';
-    setTimeout(() => toast.remove(), 300);
-  }, 4000);
+  toast.textContent = msg;
+  elements.toastContainer.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
 }
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
+  const rawData = window.atob(base64);
   return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
 }
 
-// ===================== SERVICE WORKER & PUSH =====================
-async function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) {
-    console.log('[SW] Not supported');
-    return;
-  }
-  
-  try {
-    swReg = await navigator.serviceWorker.register('/sw.js');
-    console.log('[SW] Registered:', swReg);
-    
-    // Listen for messages from SW
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data && event.data.action === 'acknowledge') {
-        acknowledgeAlert();
-      }
-    });
-  } catch (e) {
-    console.error('[SW] Registration failed:', e);
-  }
-}
-
-function updateNotificationUI() {
-  const icon = document.getElementById('notifIcon');
-  const title = document.getElementById('notifTitle');
-  const desc = document.getElementById('notifDesc');
-  const btn = document.getElementById('enableNotifBtn');
-  
-  if (!('Notification' in window)) {
-    icon.className = 'notif-icon blocked';
-    icon.textContent = '🚫';
-    title.textContent = 'Not Supported';
-    desc.textContent = 'Push notifications are not supported in this browser';
-    btn.disabled = true;
-    btn.textContent = 'Not Available';
-    return;
-  }
-  
-  const perm = Notification.permission;
-  
-  if (perm === 'granted') {
-    icon.className = 'notif-icon enabled';
-    icon.textContent = '✅';
-    title.textContent = 'Notifications Enabled';
-    desc.textContent = 'You will receive alerts when temperatures go out of range';
-    btn.textContent = '✓ Enabled';
-    btn.disabled = true;
-    btn.classList.remove('btn-success');
-    btn.classList.add('btn-secondary');
-  } else if (perm === 'denied') {
-    icon.className = 'notif-icon blocked';
-    icon.textContent = '🚫';
-    title.textContent = 'Notifications Blocked';
-    desc.textContent = 'Please enable notifications in your browser settings';
-    btn.textContent = 'Blocked';
-    btn.disabled = true;
+function setLoading(show, text = 'Loading...') {
+  if (show) {
+    elements.loadingOverlay.classList.remove('hidden');
+    elements.loadingText.textContent = text;
   } else {
-    icon.className = 'notif-icon pending';
-    icon.textContent = '🔔';
-    title.textContent = 'Enable Notifications';
-    desc.textContent = 'Get instant alerts when temperatures go out of range';
-    btn.textContent = '🔔 Enable Notifications';
-    btn.disabled = false;
+    elements.loadingOverlay.classList.add('hidden');
   }
 }
 
-async function enableNotifications() {
-  try {
-    const perm = await Notification.requestPermission();
-    
-    if (perm === 'granted') {
-      showToast('Notifications enabled!', 'success');
-      await subscribeToPush();
-    } else {
-      showToast('Permission denied', 'error');
-    }
-    
-    updateNotificationUI();
-  } catch (e) {
-    console.error('Notification error:', e);
-    showToast('Error enabling notifications', 'error');
+function setConnectionStatus(connected) {
+  isConnected = connected;
+  if (connected) {
+    elements.statusDot.classList.add('connected');
+    elements.statusText.textContent = 'Connected';
+    elements.loginStatus.textContent = '✅ Connected to server';
+    elements.loginStatus.style.color = 'var(--green)';
+  } else {
+    elements.statusDot.classList.remove('connected');
+    elements.statusText.textContent = 'Offline';
+    elements.loginStatus.textContent = '❌ Connection failed';
+    elements.loginStatus.style.color = 'var(--red)';
   }
 }
 
-async function subscribeToPush() {
-  if (!swReg) {
-    console.log('No service worker registration');
-    return;
-  }
-  
-  try {
-    const subscription = await swReg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    });
-    
-    console.log('[Push] Subscribed:', subscription);
-    
-    const json = subscription.toJSON();
-    
-    // Save to database
-    const { error } = await sb.from('push_subscriptions').upsert({
-      endpoint: json.endpoint,
-      p256dh: json.keys.p256dh,
-      auth: json.keys.auth,
-      user_agent: navigator.userAgent
-    }, { onConflict: 'endpoint' });
-    
-    if (error) {
-      console.error('Error saving subscription:', error);
-    } else {
-      console.log('[Push] Subscription saved to database');
-    }
-  } catch (e) {
-    console.error('Push subscription error:', e);
-  }
-}
-
-function testNotification() {
-  if (Notification.permission !== 'granted') {
-    showToast('Enable notifications first!', 'error');
-    return;
-  }
-  
-  // Show local notification
-  new Notification('🧪 Test Alert - Hasmed Pharmacy', {
-    body: 'Push notifications are working! ' + new Date().toLocaleTimeString(),
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    tag: 'test-' + Date.now()
-  });
-  
-  showToast('Test notification sent!', 'success');
-}
-
-// ===================== AUTHENTICATION =====================
-document.getElementById('loginForm').addEventListener('submit', (e) => {
+// ==================== AUTH ====================
+function handleLogin(e) {
   e.preventDefault();
-  const pwd = document.getElementById('passwordInput').value;
+  const password = elements.passwordInput.value;
   
-  if (pwd === PASSWORD) {
+  if (password === CONFIG.PASSWORD) {
     isLoggedIn = true;
     isDemoMode = false;
     sessionStorage.setItem('loggedIn', 'true');
-    document.getElementById('loginOverlay').classList.add('hidden');
-    document.getElementById('logoutBtn').style.display = 'block';
-    document.getElementById('userDisplay').textContent = 'Admin';
-    showToast('Welcome to Hasmed Pharmacy Monitor!', 'success');
+    elements.loginOverlay.classList.add('hidden');
+    elements.logoutBtn.style.display = 'block';
+    elements.userDisplay.textContent = 'Admin';
+    elements.ackBtn.disabled = false;
+    showToast('Welcome!', 'success');
+    loadDashboard();
   } else {
-    document.getElementById('loginError').classList.add('show');
-    setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
+    elements.loginError.classList.add('show');
+    elements.loginError.textContent = 'Invalid password';
+    setTimeout(() => elements.loginError.classList.remove('show'), 3000);
   }
-});
+}
 
-function demoLogin() {
+function handleDemoLogin() {
   isDemoMode = true;
   isLoggedIn = false;
-  document.getElementById('loginOverlay').classList.add('hidden');
-  document.getElementById('userDisplay').textContent = 'Demo Mode';
-  document.getElementById('ackBtn').disabled = true;
-  document.getElementById('ackBtn').textContent = 'Login to Acknowledge';
+  elements.loginOverlay.classList.add('hidden');
+  elements.userDisplay.textContent = 'Demo Mode';
+  elements.ackBtn.disabled = true;
   showToast('Demo mode - view only', 'info');
+  loadDashboard();
 }
 
 function logout() {
   sessionStorage.removeItem('loggedIn');
-  isLoggedIn = false;
-  isDemoMode = false;
   location.reload();
 }
 
-// ===================== ACKNOWLEDGE =====================
-async function acknowledgeAlert() {
-  if (isDemoMode) {
-    showToast('Login required to acknowledge alerts', 'error');
-    return;
-  }
-  
-  const btn = document.getElementById('ackBtn');
-  btn.disabled = true;
-  btn.textContent = 'Acknowledging...';
-  
+// ==================== SUPABASE ====================
+async function initSupabase() {
   try {
-    const { error } = await sb.from('alert_state').update({
-      is_acknowledged: true,
-      acknowledged_at: new Date().toISOString()
-    }).eq('id', 1);
+    elements.loginStatus.textContent = 'Connecting to server...';
+    
+    sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+    
+    // Test connection
+    const { count, error } = await sb
+      .from('temperature_readings')
+      .select('*', { count: 'exact', head: true });
     
     if (error) throw error;
     
-    document.getElementById('alertBanner').classList.remove('show');
-    document.getElementById('alertStatus').textContent = 'Acknowledged';
-    document.getElementById('alertStatus').style.color = 'var(--accent-yellow)';
+    setConnectionStatus(true);
+    elements.totalRecords.textContent = count || 0;
     
-    showToast('Alert acknowledged! Notifications paused.', 'success');
+    console.log('[Supabase] Connected, records:', count);
+    return true;
   } catch (e) {
-    console.error('Acknowledge error:', e);
-    showToast('Error acknowledging alert', 'error');
-    btn.disabled = false;
-    btn.textContent = '✓ Acknowledge';
+    console.error('[Supabase] Error:', e);
+    setConnectionStatus(false);
+    return false;
   }
 }
 
-async function checkAlertState() {
-  try {
-    const { data } = await sb.from('alert_state').select('*').eq('id', 1).single();
-    
-    if (data) {
-      const el = document.getElementById('alertStatus');
-      if (data.is_acknowledged) {
-        el.textContent = 'Acknowledged';
-        el.style.color = 'var(--accent-yellow)';
-      } else if (data.current_alert_started) {
-        el.textContent = 'ALERT ACTIVE';
-        el.style.color = 'var(--accent-red)';
-      } else {
-        el.textContent = 'Normal';
-        el.style.color = 'var(--accent-green)';
-      }
-    }
-  } catch (e) {
-    console.log('Alert state check error:', e);
-  }
-}
-
-// ===================== DATA LOADING =====================
+// ==================== DATA LOADING ====================
 async function loadCurrentReading() {
+  if (!sb) return;
   try {
     const { data, error } = await sb
       .from('temperature_readings')
@@ -1193,94 +488,523 @@ async function loadCurrentReading() {
     if (error) throw error;
     if (data) updateDisplay(data);
   } catch (e) {
-    console.error('Error loading current reading:', e);
+    console.error('[Load] Current reading error:', e);
   }
 }
 
-function updateDisplay(r) {
-  const ambient = parseFloat(r.ambient_temp);
-  const fridge = parseFloat(r.freezer_temp);
+function updateDisplay(reading) {
+  const ambient = parseFloat(reading.ambient_temp);
+  const fridge = parseFloat(reading.freezer_temp);
   
-  const aAlert = ambient < AMBIENT_MIN || ambient > AMBIENT_MAX;
-  const fAlert = fridge < FRIDGE_MIN || fridge > FRIDGE_MAX;
+  const ambientAlert = ambient < CONFIG.AMBIENT_MIN || ambient > CONFIG.AMBIENT_MAX;
+  const fridgeAlert = fridge < CONFIG.FRIDGE_MIN || fridge > CONFIG.FRIDGE_MAX;
   
   // Ambient
-  document.getElementById('ambientTemp').textContent = ambient.toFixed(1) + '°C';
-  document.getElementById('ambientTemp').className = 'temp-value ' + (aAlert ? 'alert' : 'normal');
-  document.getElementById('ambientCard').classList.toggle('alert', aAlert);
-  document.getElementById('ambientBar').classList.toggle('alert', aAlert);
-  const aPercent = Math.max(0, Math.min(100, ((ambient - AMBIENT_MIN) / (AMBIENT_MAX - AMBIENT_MIN)) * 100));
-  document.getElementById('ambientBar').style.width = aPercent + '%';
+  elements.ambientTemp.textContent = ambient.toFixed(1) + '°C';
+  elements.ambientTemp.className = 'temp-value ' + (ambientAlert ? 'alert' : 'normal');
+  elements.ambientCard.classList.toggle('alert', ambientAlert);
+  elements.ambientBar.classList.toggle('alert', ambientAlert);
+  const ambientPercent = Math.max(0, Math.min(100, ((ambient - CONFIG.AMBIENT_MIN) / (CONFIG.AMBIENT_MAX - CONFIG.AMBIENT_MIN)) * 100));
+  elements.ambientBar.style.width = ambientPercent + '%';
   
   // Fridge
-  document.getElementById('fridgeTemp').textContent = fridge.toFixed(1) + '°C';
-  document.getElementById('fridgeTemp').className = 'temp-value ' + (fAlert ? 'alert' : 'normal');
-  document.getElementById('fridgeCard').classList.toggle('alert', fAlert);
-  document.getElementById('fridgeBar').classList.toggle('alert', fAlert);
-  const fPercent = Math.max(0, Math.min(100, ((fridge - FRIDGE_MIN) / (FRIDGE_MAX - FRIDGE_MIN)) * 100));
-  document.getElementById('fridgeBar').style.width = fPercent + '%';
+  elements.fridgeTemp.textContent = fridge.toFixed(1) + '°C';
+  elements.fridgeTemp.className = 'temp-value ' + (fridgeAlert ? 'alert' : 'normal');
+  elements.fridgeCard.classList.toggle('alert', fridgeAlert);
+  elements.fridgeBar.classList.toggle('alert', fridgeAlert);
+  const fridgePercent = Math.max(0, Math.min(100, ((fridge - CONFIG.FRIDGE_MIN) / (CONFIG.FRIDGE_MAX - CONFIG.FRIDGE_MIN)) * 100));
+  elements.fridgeBar.style.width = fridgePercent + '%';
   
   // Status
-  document.getElementById('lastUpdate').textContent = new Date(r.timestamp).toLocaleString();
-  document.getElementById('wifiSignal').textContent = (r.wifi_rssi || '--') + ' dBm';
+  elements.lastUpdate.textContent = new Date(reading.timestamp).toLocaleString();
+  elements.wifiSignal.textContent = (reading.wifi_rssi || '--') + ' dBm';
   
   // Alert banner
-  const banner = document.getElementById('alertBanner');
-  const ackBtn = document.getElementById('ackBtn');
-  
-  if (aAlert || fAlert) {
-    let details = [];
-    if (aAlert) details.push('Ambient: ' + ambient.toFixed(1) + '°C');
-    if (fAlert) details.push('Fridge: ' + fridge.toFixed(1) + '°C');
-    document.getElementById('alertDetails').textContent = details.join(' | ');
-    banner.classList.add('show');
-    
-    if (!isDemoMode) {
-      ackBtn.disabled = false;
-      ackBtn.textContent = '✓ Acknowledge';
-    }
+  if (ambientAlert || fridgeAlert) {
+    const details = [];
+    if (ambientAlert) details.push('Ambient: ' + ambient.toFixed(1) + '°C');
+    if (fridgeAlert) details.push('Fridge: ' + fridge.toFixed(1) + '°C');
+    elements.alertDetails.textContent = details.join(' | ');
+    elements.alertBanner.classList.add('show');
   } else {
-    banner.classList.remove('show');
+    elements.alertBanner.classList.remove('show');
   }
 }
 
 async function loadStats() {
+  if (!sb) return;
+  
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   
   try {
-    // Today's data
     const { data } = await sb
       .from('temperature_readings')
       .select('ambient_temp, freezer_temp, ambient_alert, freezer_alert')
       .gte('timestamp', todayStart);
     
     if (data && data.length > 0) {
-      const avgA = data.reduce((s, r) => s + parseFloat(r.ambient_temp), 0) / data.length;
-      const avgF = data.reduce((s, r) => s + parseFloat(r.freezer_temp), 0) / data.length;
+      const ambientTemps = data.map(r => parseFloat(r.ambient_temp));
+      const fridgeTemps = data.map(r => parseFloat(r.freezer_temp));
       
-      document.getElementById('avgAmbient').textContent = avgA.toFixed(1) + '°C';
-      document.getElementById('avgFridge').textContent = avgF.toFixed(1) + '°C';
+      const avgAmbient = ambientTemps.reduce((a, b) => a + b, 0) / ambientTemps.length;
+      const avgFridge = fridgeTemps.reduce((a, b) => a + b, 0) / fridgeTemps.length;
       
-      const aTemps = data.map(r => parseFloat(r.ambient_temp));
-      const fTemps = data.map(r => parseFloat(r.freezer_temp));
+      elements.avgAmbient.textContent = avgAmbient.toFixed(1) + '°C';
+      elements.avgFridge.textContent = avgFridge.toFixed(1) + '°C';
       
-      document.getElementById('ambientMin').textContent = Math.min(...aTemps).toFixed(1) + '°C';
-      document.getElementById('ambientMax').textContent = Math.max(...aTemps).toFixed(1) + '°C';
-      document.getElementById('fridgeMin').textContent = Math.min(...fTemps).toFixed(1) + '°C';
-      document.getElementById('fridgeMax').textContent = Math.max(...fTemps).toFixed(1) + '°C';
+      elements.ambientMin.textContent = Math.min(...ambientTemps).toFixed(1) + '°C';
+      elements.ambientMax.textContent = Math.max(...ambientTemps).toFixed(1) + '°C';
+      elements.fridgeMin.textContent = Math.min(...fridgeTemps).toFixed(1) + '°C';
+      elements.fridgeMax.textContent = Math.max(...fridgeTemps).toFixed(1) + '°C';
       
-      const alerts = data.filter(r => r.ambient_alert || r.freezer_alert).length;
-      document.getElementById('todayAlerts').textContent = alerts;
-      document.getElementById('todayAlerts').style.color = alerts > 0 ? 'var(--accent-red)' : 'var(--accent-green)';
+      const alertCount = data.filter(r => r.ambient_alert || r.freezer_alert).length;
+      elements.todayAlerts.textContent = alertCount;
+      elements.todayAlerts.style.color = alertCount > 0 ? 'var(--red)' : 'var(--green)';
     }
     
     // Week count
     const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { count: wc } = await sb.from('temperature_readings').select('*', { count: 'exact', head: true }).gte('timestamp', weekAgo);
-    document.getElementById('weekCount').textContent = (wc || 0).toLocaleString();
+    const { count: weekCount } = await sb
+      .from('temperature_readings')
+      .select('*', { count: 'exact', head: true })
+      .gte('timestamp', weekAgo);
+    elements.weekCount.textContent = weekCount || 0;
     
     // Month count
     const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const { count: mc } = await sb.from('temperature_readings').select('*', { count: 'exact', head: true }).gte('timestamp', monthAgo);
+    const { count: monthCount } = await sb
+      .from('temperature_readings')
+      .select('*', { count: 'exact', head: true })
+      .gte('timestamp', monthAgo);
+    elements.monthCount.textContent = monthCount || 0;
     
+  } catch (e) {
+    console.error('[Stats] Error:', e);
+  }
+}
+
+async function loadRecentReadings() {
+  if (!sb) return;
+  
+  try {
+    const { data, error } = await sb
+      .from('temperature_readings')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(20);
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      elements.readingsTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px">No data yet</td></tr>';
+      return;
+    }
+    
+    elements.readingsTable.innerHTML = data.map(r => {
+      const hasAlert = r.ambient_alert || r.freezer_alert;
+      return `
+        <tr>
+          <td>${new Date(r.timestamp).toLocaleString()}</td>
+          <td style="color:${r.ambient_alert ? 'var(--red)' : 'var(--cyan)'}">${parseFloat(r.ambient_temp).toFixed(1)}°C</td>
+          <td style="color:${r.freezer_alert ? 'var(--red)' : 'var(--blue)'}">${parseFloat(r.freezer_temp).toFixed(1)}°C</td>
+          <td>${r.wifi_rssi || '--'} dBm</td>
+          <td><span class="badge ${hasAlert ? 'alert' : 'ok'}">${hasAlert ? '⚠️' : '✓'}</span></td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    console.error('[Table] Error:', e);
+  }
+}
+
+// ==================== ALERT STATE ====================
+async function checkAlertState() {
+  if (!sb) return;
+  
+  try {
+    const { data, error } = await sb
+      .from('alert_state')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    
+    if (error) throw error;
+    
+    if (data) {
+      if (data.is_acknowledged) {
+        elements.alertStatus.textContent = 'Acknowledged';
+        elements.alertStatus.style.color = 'var(--yellow)';
+      } else if (data.current_alert_started) {
+        elements.alertStatus.textContent = 'ALERT';
+        elements.alertStatus.style.color = 'var(--red)';
+      } else {
+        elements.alertStatus.textContent = 'Normal';
+        elements.alertStatus.style.color = 'var(--green)';
+      }
+    }
+  } catch (e) {
+    console.error('[AlertState] Error:', e);
+  }
+}
+
+async function acknowledgeAlert() {
+  if (isDemoMode) {
+    showToast('Login required to acknowledge', 'error');
+    return;
+  }
+  
+  elements.ackBtn.disabled = true;
+  elements.ackBtn.textContent = 'Acknowledging...';
+  
+  try {
+    const { error } = await sb
+      .from('alert_state')
+      .update({
+        is_acknowledged: true,
+        acknowledged_at: new Date().toISOString()
+      })
+      .eq('id', 1);
+    
+    if (error) throw error;
+    
+    elements.alertBanner.classList.remove('show');
+    elements.alertStatus.textContent = 'Acknowledged';
+    elements.alertStatus.style.color = 'var(--yellow)';
+    showToast('Alert acknowledged!', 'success');
+  } catch (e) {
+    console.error('[Ack] Error:', e);
+    showToast('Failed to acknowledge', 'error');
+  } finally {
+    elements.ackBtn.disabled = isDemoMode;
+    elements.ackBtn.textContent = '✓ Acknowledge';
+  }
+}
+
+// ==================== CHART ====================
+function initChart() {
+  const ctx = document.getElementById('tempChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Ambient',
+          data: [],
+          borderColor: '#4cc9f0',
+          backgroundColor: 'rgba(76,201,240,0.1)',
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: 'Fridge',
+          data: [],
+          borderColor: '#4361ee',
+          backgroundColor: 'rgba(67,97,238,0.1)',
+          fill: true,
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#a0a0b0' } }
+      },
+      scales: {
+        x: { ticks: { color: '#a0a0b0' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#a0a0b0' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
+  });
+}
+
+async function loadChart(period) {
+  if (!sb || !chart) return;
+  
+  const now = new Date();
+  let startDate;
+  
+  switch (period) {
+    case 'weekly':
+      startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'monthly':
+      startDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+  
+  try {
+    const { data, error } = await sb
+      .from('temperature_readings')
+      .select('timestamp, ambient_temp, freezer_temp')
+      .gte('timestamp', startDate.toISOString())
+      .order('timestamp');
+    
+    if (error) throw error;
+    if (!data || data.length === 0) return;
+    
+    // Sample data if too many points
+    const sampled = data.length > 100 
+      ? data.filter((_, i) => i % Math.ceil(data.length / 100) === 0)
+      : data;
+    
+    chart.data.labels = sampled.map(r => 
+      new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    );
+    chart.data.datasets[0].data = sampled.map(r => parseFloat(r.ambient_temp));
+    chart.data.datasets[1].data = sampled.map(r => parseFloat(r.freezer_temp));
+    chart.update();
+  } catch (e) {
+    console.error('[Chart] Error:', e);
+  }
+}
+
+// ==================== REALTIME ====================
+function setupRealtime() {
+  if (!sb) return;
+  
+  sb.channel('readings')
+    .on('postgres_changes', 
+      { event: 'INSERT', schema: 'public', table: 'temperature_readings' },
+      payload => {
+        console.log('[Realtime] New reading');
+        updateDisplay(payload.new);
+        loadRecentReadings();
+        loadStats();
+      }
+    )
+    .subscribe();
+}
+
+// ==================== PUSH NOTIFICATIONS ====================
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  
+  try {
+    swReg = await navigator.serviceWorker.register('/sw.js');
+    console.log('[SW] Registered');
+  } catch (e) {
+    console.error('[SW] Registration failed:', e);
+  }
+}
+
+function updateNotificationUI() {
+  if (!('Notification' in window)) {
+    elements.notifIcon.className = 'notif-icon blocked';
+    elements.notifIcon.textContent = '🚫';
+    elements.notifTitle.textContent = 'Not Supported';
+    elements.notifDesc.textContent = 'Push notifications not available';
+    elements.enableNotifBtn.disabled = true;
+    return;
+  }
+  
+  const permission = Notification.permission;
+  
+  if (permission === 'granted') {
+    elements.notifIcon.className = 'notif-icon enabled';
+    elements.notifIcon.textContent = '✅';
+    elements.notifTitle.textContent = 'Notifications Enabled';
+    elements.notifDesc.textContent = 'You will receive temperature alerts';
+    elements.enableNotifBtn.textContent = '✓ Enabled';
+    elements.enableNotifBtn.disabled = true;
+  } else if (permission === 'denied') {
+    elements.notifIcon.className = 'notif-icon blocked';
+    elements.notifIcon.textContent = '🚫';
+    elements.notifTitle.textContent = 'Notifications Blocked';
+    elements.notifDesc.textContent = 'Enable in browser settings';
+    elements.enableNotifBtn.disabled = true;
+  }
+}
+
+async function enableNotifications() {
+  try {
+    const permission = await Notification.requestPermission();
+    
+    if (permission === 'granted') {
+      showToast('Notifications enabled!', 'success');
+      await subscribePush();
+    } else {
+      showToast('Permission denied', 'error');
+    }
+    
+    updateNotificationUI();
+  } catch (e) {
+    console.error('[Notif] Error:', e);
+    showToast('Error enabling notifications', 'error');
+  }
+}
+
+async function subscribePush() {
+  if (!swReg || !sb) return;
+  
+  try {
+    const subscription = await swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(CONFIG.VAPID_PUBLIC_KEY)
+    });
+    
+    const json = subscription.toJSON();
+    
+    await sb.from('push_subscriptions').upsert({
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth,
+      user_agent: navigator.userAgent
+    }, { onConflict: 'endpoint' });
+    
+    console.log('[Push] Subscription saved');
+  } catch (e) {
+    console.error('[Push] Subscribe error:', e);
+  }
+}
+
+function testNotification() {
+  if (Notification.permission !== 'granted') {
+    showToast('Enable notifications first', 'error');
+    return;
+  }
+  
+  new Notification('🧪 Test - Hasmed Pharmacy', {
+    body: 'Push notifications are working! ' + new Date().toLocaleTimeString(),
+    icon: '/icon-192.png'
+  });
+  
+  showToast('Test notification sent!', 'success');
+}
+
+// ==================== ACTIONS ====================
+async function refreshData() {
+  showToast('Refreshing...', 'info');
+  await loadCurrentReading();
+  await loadStats();
+  await loadRecentReadings();
+  await checkAlertState();
+  showToast('Data refreshed!', 'success');
+}
+
+function downloadCSV() {
+  if (!sb) return;
+  
+  sb.from('temperature_readings')
+    .select('*')
+    .order('timestamp', { ascending: false })
+    .then(({ data, error }) => {
+      if (error || !data) {
+        showToast('Download failed', 'error');
+        return;
+      }
+      
+      const csv = 'Timestamp,Ambient,Fridge,Ambient_Alert,Fridge_Alert,WiFi\n' +
+        data.map(r => 
+          `${r.timestamp},${r.ambient_temp},${r.freezer_temp},${r.ambient_alert},${r.freezer_alert},${r.wifi_rssi}`
+        ).join('\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `hasmed_temps_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      
+      showToast('Downloaded!', 'success');
+    });
+}
+
+// ==================== DASHBOARD LOADING ====================
+async function loadDashboard() {
+  setLoading(true, 'Loading dashboard...');
+  
+  try {
+    await loadCurrentReading();
+    await loadStats();
+    await loadRecentReadings();
+    await checkAlertState();
+    initChart();
+    await loadChart('daily');
+    setupRealtime();
+    
+    // Periodic refresh
+    setInterval(async () => {
+      await loadCurrentReading();
+      await loadStats();
+      await checkAlertState();
+    }, 30000);
+    
+  } catch (e) {
+    console.error('[Dashboard] Load error:', e);
+    showToast('Error loading dashboard', 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ==================== INITIALIZATION ====================
+async function init() {
+  console.log('[Init] Starting...');
+  
+  // Setup event listeners
+  elements.loginForm.addEventListener('submit', handleLogin);
+  elements.demoBtn.addEventListener('click', handleDemoLogin);
+  elements.logoutBtn.addEventListener('click', logout);
+  elements.ackBtn.addEventListener('click', acknowledgeAlert);
+  elements.refreshBtn.addEventListener('click', refreshData);
+  elements.downloadBtn.addEventListener('click', downloadCSV);
+  elements.enableNotifBtn.addEventListener('click', enableNotifications);
+  elements.testNotifBtn.addEventListener('click', testNotification);
+  
+  // Chart tabs
+  elements.chartTabs.addEventListener('click', (e) => {
+    if (e.target.classList.contains('chart-tab')) {
+      elements.chartTabs.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      loadChart(e.target.dataset.period);
+    }
+  });
+  
+  // Install banner
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    elements.installBanner.classList.add('show');
+  });
+  
+  elements.installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      elements.installBanner.classList.remove('show');
+    }
+  });
+  
+  // Check URL params for auto-acknowledge
+  if (new URLSearchParams(location.search).get('ack') === '1') {
+    history.replaceState(null, '', '/');
+  }
+  
+  // Initialize Supabase
+  const connected = await initSupabase();
+  
+  // Check for saved session
+  if (sessionStorage.getItem('loggedIn') === 'true') {
+    isLoggedIn = true;
+    elements.loginOverlay.classList.add('hidden');
+    elements.logoutBtn.style.display = 'block';
+    elements.userDisplay.textContent = 'Admin';
+    loadDashboard();
+  }
+  
+  // Register service worker
+  registerServiceWorker();
+  updateNotificationUI();
+}
+
+// Start
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
