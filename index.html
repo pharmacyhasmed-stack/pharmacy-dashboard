@@ -30,14 +30,19 @@
     .login-logo img{width:80%;height:80%;object-fit:contain}
     .login-card h1{font-size:1.5rem;margin-bottom:8px;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
     .login-card>p{color:var(--text2);margin-bottom:30px}
-    .login-input{width:100%;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;margin-bottom:15px}
+    .login-label{text-align:left;font-size:12px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+    .login-input{width:100%;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;margin-bottom:20px}
     .login-input:focus{outline:none;border-color:var(--blue)}
-    .login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),var(--cyan));border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px}
+    .login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),var(--cyan));border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+    .login-btn:hover{opacity:0.9}
     .login-btn:disabled{opacity:0.6;cursor:not-allowed}
-    .demo-btn{width:100%;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer}
+    .demo-btn{width:100%;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+    .demo-btn:hover{background:var(--bg);border-color:var(--blue)}
     .login-error{background:rgba(233,69,96,0.15);border:1px solid var(--red);color:var(--red);padding:12px;border-radius:10px;margin-bottom:15px;display:none}
     .login-error.show{display:block}
-    .login-status{color:var(--text2);font-size:12px;margin-top:15px}
+    .login-status{color:var(--text2);font-size:12px;margin-top:20px}
+    .login-status.success{color:var(--green)}
+    .login-status.error{color:var(--red)}
     
     .loading-overlay{position:fixed;inset:0;background:rgba(10,10,15,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:4000}
     .loading-overlay.hidden{display:none}
@@ -133,41 +138,51 @@
     .badge.alert{background:rgba(233,69,96,0.15);color:var(--red)}
     
     .footer{text-align:center;padding:30px 20px;color:var(--text2);font-size:13px;border-top:1px solid var(--border);margin-top:30px}
-    .footer-logo{width:40px;height:40px;margin:0 auto 10px;border-radius:10px;overflow:hidden}
-    .footer-logo img{width:100%;height:100%;object-fit:contain}
     
     @media(max-width:768px){.header{padding:12px 15px}.main{padding:15px}.temp-value{font-size:2.8rem}.temp-grid{grid-template-columns:1fr}.notif-card{margin:15px;padding:15px}}
   </style>
 </head>
 <body>
 
+<!-- Install Banner -->
 <div class="install-banner" id="installBanner">
   <span>📱 Install app for push notifications</span>
   <button id="installBtn">Install App</button>
 </div>
 
+<!-- Login Screen -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
-    <div class="login-logo" id="loginLogo">🌡️</div>
+    <div class="login-logo">
+      <img src="icon-192.png" alt="Logo" onerror="this.parentElement.innerHTML='🌡️'">
+    </div>
     <h1>Hasmed Pharmacy</h1>
     <p>Temperature Monitoring System</p>
+    
     <div class="login-error" id="loginError">Invalid password</div>
+    
     <form id="loginForm">
+      <div class="login-label">PASSWORD</div>
       <input type="password" class="login-input" id="passwordInput" placeholder="Enter password" required autocomplete="current-password">
       <button type="submit" class="login-btn" id="loginBtn">🔐 Login</button>
     </form>
-    <button class="demo-btn" id="demoBtn">👀 Demo Mode</button>
-    <div class="login-status" id="loginStatus">Checking connection...</div>
+    
+    <button class="demo-btn" id="demoBtn">👀 Demo Mode (View Only)</button>
+    
+    <div class="login-status" id="loginStatus">Connecting to server...</div>
   </div>
 </div>
 
+<!-- Loading Overlay -->
 <div class="loading-overlay hidden" id="loadingOverlay">
   <div class="spinner"></div>
   <p style="color:var(--text2)" id="loadingText">Loading dashboard...</p>
 </div>
 
+<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- Alert Banner -->
 <div class="alert-banner" id="alertBanner">
   <div class="alert-info">
     <span class="icon">🚨</span>
@@ -179,9 +194,12 @@
   <button class="ack-btn" id="ackBtn">✓ Acknowledge</button>
 </div>
 
+<!-- Header -->
 <header class="header">
   <div class="logo">
-    <div class="logo-icon">🌡️</div>
+    <div class="logo-icon">
+      <img src="icon-192.png" alt="Logo" onerror="this.parentElement.innerHTML='🌡️'">
+    </div>
     <div class="logo-text">
       <h1>Hasmed Pharmacy</h1>
       <small id="userDisplay">Temperature Monitor</small>
@@ -193,11 +211,12 @@
       <span id="statusText">Offline</span>
     </div>
     <button class="btn btn-secondary" id="refreshBtn">🔄</button>
-    <button class="btn btn-primary" id="downloadBtn">📥</button>
+    <button class="btn btn-primary" id="downloadBtn">📥 Export</button>
     <button class="btn btn-danger" id="logoutBtn" style="display:none">Logout</button>
   </div>
 </header>
 
+<!-- Notification Card -->
 <div class="notif-card">
   <h3>🔔 Push Notifications</h3>
   <div class="notif-row">
@@ -208,12 +227,14 @@
     </div>
   </div>
   <div class="notif-btns">
-    <button class="btn btn-success" id="enableNotifBtn">🔔 Enable</button>
+    <button class="btn btn-success" id="enableNotifBtn">🔔 Enable Notifications</button>
     <button class="btn btn-secondary" id="testNotifBtn">🧪 Test</button>
   </div>
 </div>
 
+<!-- Main Content -->
 <main class="main">
+  <!-- Temperature Cards -->
   <div class="temp-grid">
     <div class="card" id="ambientCard">
       <div class="card-header">
@@ -262,6 +283,7 @@
     </div>
   </div>
   
+  <!-- Stats Grid -->
   <div class="stats-grid">
     <div class="stat-card"><div class="label">Avg Ambient</div><div class="value" style="color:var(--cyan)" id="avgAmbient">--.-°C</div></div>
     <div class="stat-card"><div class="label">Avg Fridge</div><div class="value" style="color:var(--blue)" id="avgFridge">--.-°C</div></div>
@@ -269,6 +291,7 @@
     <div class="stat-card"><div class="label">This Month</div><div class="value" id="monthCount">--</div></div>
   </div>
   
+  <!-- Chart -->
   <div class="chart-section">
     <div class="chart-header">
       <h2 class="chart-title">📊 Temperature History</h2>
@@ -281,6 +304,7 @@
     <div class="chart-container"><canvas id="tempChart"></canvas></div>
   </div>
   
+  <!-- Recent Readings Table -->
   <div class="table-section">
     <div class="chart-header">
       <h2 class="chart-title">📋 Recent Readings</h2>
@@ -292,13 +316,13 @@
   </div>
 </main>
 
+<!-- Footer -->
 <footer class="footer">
-  <p><strong>Hasmed Pharmacy</strong></p>
-  <p>Temperature Monitoring System</p>
+  <p><strong>Hasmed Pharmacy</strong> - Temperature Monitoring System</p>
 </footer>
 
 <script>
-// ==================== CONFIG ====================
+// ==================== CONFIGURATION ====================
 const CONFIG = {
   SUPABASE_URL: 'https://avxakvxjgpwzctuagaww.supabase.co',
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo',
@@ -310,73 +334,21 @@ const CONFIG = {
   FRIDGE_MAX: 8
 };
 
-// ==================== STATE ====================
-let sb = null;
+// ==================== GLOBAL STATE ====================
+let supabaseClient = null;
 let chart = null;
-let swReg = null;
+let serviceWorkerReg = null;
 let isLoggedIn = false;
 let isDemoMode = false;
-let deferredPrompt = null;
-let isConnected = false;
+let deferredInstallPrompt = null;
 
-// ==================== DOM ELEMENTS ====================
-const elements = {
-  loginOverlay: document.getElementById('loginOverlay'),
-  loadingOverlay: document.getElementById('loadingOverlay'),
-  loadingText: document.getElementById('loadingText'),
-  loginForm: document.getElementById('loginForm'),
-  loginBtn: document.getElementById('loginBtn'),
-  demoBtn: document.getElementById('demoBtn'),
-  passwordInput: document.getElementById('passwordInput'),
-  loginError: document.getElementById('loginError'),
-  loginStatus: document.getElementById('loginStatus'),
-  logoutBtn: document.getElementById('logoutBtn'),
-  userDisplay: document.getElementById('userDisplay'),
-  statusDot: document.getElementById('statusDot'),
-  statusText: document.getElementById('statusText'),
-  alertBanner: document.getElementById('alertBanner'),
-  alertDetails: document.getElementById('alertDetails'),
-  ackBtn: document.getElementById('ackBtn'),
-  alertStatus: document.getElementById('alertStatus'),
-  toastContainer: document.getElementById('toastContainer'),
-  installBanner: document.getElementById('installBanner'),
-  installBtn: document.getElementById('installBtn'),
-  refreshBtn: document.getElementById('refreshBtn'),
-  downloadBtn: document.getElementById('downloadBtn'),
-  enableNotifBtn: document.getElementById('enableNotifBtn'),
-  testNotifBtn: document.getElementById('testNotifBtn'),
-  notifIcon: document.getElementById('notifIcon'),
-  notifTitle: document.getElementById('notifTitle'),
-  notifDesc: document.getElementById('notifDesc'),
-  chartTabs: document.getElementById('chartTabs'),
-  // Temperature displays
-  ambientTemp: document.getElementById('ambientTemp'),
-  fridgeTemp: document.getElementById('fridgeTemp'),
-  ambientCard: document.getElementById('ambientCard'),
-  fridgeCard: document.getElementById('fridgeCard'),
-  ambientBar: document.getElementById('ambientBar'),
-  fridgeBar: document.getElementById('fridgeBar'),
-  ambientMin: document.getElementById('ambientMin'),
-  ambientMax: document.getElementById('ambientMax'),
-  fridgeMin: document.getElementById('fridgeMin'),
-  fridgeMax: document.getElementById('fridgeMax'),
-  avgAmbient: document.getElementById('avgAmbient'),
-  avgFridge: document.getElementById('avgFridge'),
-  lastUpdate: document.getElementById('lastUpdate'),
-  wifiSignal: document.getElementById('wifiSignal'),
-  todayAlerts: document.getElementById('todayAlerts'),
-  totalRecords: document.getElementById('totalRecords'),
-  weekCount: document.getElementById('weekCount'),
-  monthCount: document.getElementById('monthCount'),
-  readingsTable: document.getElementById('readingsTable')
-};
-
-// ==================== UTILITIES ====================
-function showToast(msg, type = 'info') {
+// ==================== UTILITY FUNCTIONS ====================
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.textContent = msg;
-  elements.toastContainer.appendChild(toast);
+  toast.textContent = message;
+  container.appendChild(toast);
   setTimeout(() => toast.remove(), 4000);
 }
 
@@ -387,60 +359,60 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
 }
 
-function setLoading(show, text = 'Loading...') {
-  if (show) {
-    elements.loadingOverlay.classList.remove('hidden');
-    elements.loadingText.textContent = text;
-  } else {
-    elements.loadingOverlay.classList.add('hidden');
-  }
-}
-
-function setConnectionStatus(connected) {
-  isConnected = connected;
+function setConnectionStatus(connected, message) {
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  const status = document.getElementById('loginStatus');
+  
   if (connected) {
-    elements.statusDot.classList.add('connected');
-    elements.statusText.textContent = 'Connected';
-    elements.loginStatus.textContent = '✅ Connected to server';
-    elements.loginStatus.style.color = 'var(--green)';
+    dot.classList.add('connected');
+    text.textContent = 'Connected';
+    status.textContent = '✅ ' + (message || 'Connected to server');
+    status.className = 'login-status success';
   } else {
-    elements.statusDot.classList.remove('connected');
-    elements.statusText.textContent = 'Offline';
-    elements.loginStatus.textContent = '❌ Connection failed';
-    elements.loginStatus.style.color = 'var(--red)';
+    dot.classList.remove('connected');
+    text.textContent = 'Offline';
+    status.textContent = '❌ ' + (message || 'Connection failed');
+    status.className = 'login-status error';
   }
 }
 
-// ==================== AUTH ====================
-function handleLogin(e) {
-  e.preventDefault();
-  const password = elements.passwordInput.value;
+// ==================== AUTHENTICATION ====================
+function handleLogin(event) {
+  event.preventDefault();
+  
+  const password = document.getElementById('passwordInput').value;
+  const errorDiv = document.getElementById('loginError');
   
   if (password === CONFIG.PASSWORD) {
     isLoggedIn = true;
     isDemoMode = false;
     sessionStorage.setItem('loggedIn', 'true');
-    elements.loginOverlay.classList.add('hidden');
-    elements.logoutBtn.style.display = 'block';
-    elements.userDisplay.textContent = 'Admin';
-    elements.ackBtn.disabled = false;
-    showToast('Welcome!', 'success');
-    loadDashboard();
+    
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('logoutBtn').style.display = 'block';
+    document.getElementById('userDisplay').textContent = 'Admin';
+    document.getElementById('ackBtn').disabled = false;
+    
+    showToast('Welcome back!', 'success');
+    initDashboard();
   } else {
-    elements.loginError.classList.add('show');
-    elements.loginError.textContent = 'Invalid password';
-    setTimeout(() => elements.loginError.classList.remove('show'), 3000);
+    errorDiv.textContent = 'Invalid password. Try: pharmacy123';
+    errorDiv.classList.add('show');
+    setTimeout(() => errorDiv.classList.remove('show'), 3000);
   }
 }
 
-function handleDemoLogin() {
+function demoLogin() {
   isDemoMode = true;
   isLoggedIn = false;
-  elements.loginOverlay.classList.add('hidden');
-  elements.userDisplay.textContent = 'Demo Mode';
-  elements.ackBtn.disabled = true;
-  showToast('Demo mode - view only', 'info');
-  loadDashboard();
+  
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('userDisplay').textContent = 'Demo Mode';
+  document.getElementById('ackBtn').disabled = true;
+  
+  showToast('Demo mode - View only, cannot acknowledge alerts', 'info');
+  initDashboard();
 }
 
 function logout() {
@@ -451,94 +423,98 @@ function logout() {
 // ==================== SUPABASE ====================
 async function initSupabase() {
   try {
-    elements.loginStatus.textContent = 'Connecting to server...';
+    document.getElementById('loginStatus').textContent = 'Connecting to server...';
     
-    sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+    supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
     
     // Test connection
-    const { count, error } = await sb
+    const { count, error } = await supabaseClient
       .from('temperature_readings')
       .select('*', { count: 'exact', head: true });
     
     if (error) throw error;
     
-    setConnectionStatus(true);
-    elements.totalRecords.textContent = count || 0;
+    setConnectionStatus(true, `Connected (${count || 0} records)`);
+    document.getElementById('totalRecords').textContent = count || 0;
     
-    console.log('[Supabase] Connected, records:', count);
     return true;
-  } catch (e) {
-    console.error('[Supabase] Error:', e);
-    setConnectionStatus(false);
+  } catch (error) {
+    console.error('Supabase error:', error);
+    setConnectionStatus(false, 'Could not connect to database');
     return false;
   }
 }
 
 // ==================== DATA LOADING ====================
 async function loadCurrentReading() {
-  if (!sb) return;
+  if (!supabaseClient) return;
+  
   try {
-    const { data, error } = await sb
+    const { data, error } = await supabaseClient
       .from('temperature_readings')
       .select('*')
       .order('timestamp', { ascending: false })
       .limit(1)
       .single();
     
-    if (error) throw error;
-    if (data) updateDisplay(data);
-  } catch (e) {
-    console.error('[Load] Current reading error:', e);
+    if (error && error.code !== 'PGRST116') throw error;
+    if (data) updateTemperatureDisplay(data);
+  } catch (error) {
+    console.error('Load current reading error:', error);
   }
 }
 
-function updateDisplay(reading) {
+function updateTemperatureDisplay(reading) {
   const ambient = parseFloat(reading.ambient_temp);
   const fridge = parseFloat(reading.freezer_temp);
   
   const ambientAlert = ambient < CONFIG.AMBIENT_MIN || ambient > CONFIG.AMBIENT_MAX;
   const fridgeAlert = fridge < CONFIG.FRIDGE_MIN || fridge > CONFIG.FRIDGE_MAX;
   
-  // Ambient
-  elements.ambientTemp.textContent = ambient.toFixed(1) + '°C';
-  elements.ambientTemp.className = 'temp-value ' + (ambientAlert ? 'alert' : 'normal');
-  elements.ambientCard.classList.toggle('alert', ambientAlert);
-  elements.ambientBar.classList.toggle('alert', ambientAlert);
+  // Update ambient display
+  document.getElementById('ambientTemp').textContent = ambient.toFixed(1) + '°C';
+  document.getElementById('ambientTemp').className = 'temp-value ' + (ambientAlert ? 'alert' : 'normal');
+  document.getElementById('ambientCard').classList.toggle('alert', ambientAlert);
+  document.getElementById('ambientBar').classList.toggle('alert', ambientAlert);
+  
   const ambientPercent = Math.max(0, Math.min(100, ((ambient - CONFIG.AMBIENT_MIN) / (CONFIG.AMBIENT_MAX - CONFIG.AMBIENT_MIN)) * 100));
-  elements.ambientBar.style.width = ambientPercent + '%';
+  document.getElementById('ambientBar').style.width = ambientPercent + '%';
   
-  // Fridge
-  elements.fridgeTemp.textContent = fridge.toFixed(1) + '°C';
-  elements.fridgeTemp.className = 'temp-value ' + (fridgeAlert ? 'alert' : 'normal');
-  elements.fridgeCard.classList.toggle('alert', fridgeAlert);
-  elements.fridgeBar.classList.toggle('alert', fridgeAlert);
+  // Update fridge display
+  document.getElementById('fridgeTemp').textContent = fridge.toFixed(1) + '°C';
+  document.getElementById('fridgeTemp').className = 'temp-value ' + (fridgeAlert ? 'alert' : 'normal');
+  document.getElementById('fridgeCard').classList.toggle('alert', fridgeAlert);
+  document.getElementById('fridgeBar').classList.toggle('alert', fridgeAlert);
+  
   const fridgePercent = Math.max(0, Math.min(100, ((fridge - CONFIG.FRIDGE_MIN) / (CONFIG.FRIDGE_MAX - CONFIG.FRIDGE_MIN)) * 100));
-  elements.fridgeBar.style.width = fridgePercent + '%';
+  document.getElementById('fridgeBar').style.width = fridgePercent + '%';
   
-  // Status
-  elements.lastUpdate.textContent = new Date(reading.timestamp).toLocaleString();
-  elements.wifiSignal.textContent = (reading.wifi_rssi || '--') + ' dBm';
+  // Update status
+  document.getElementById('lastUpdate').textContent = new Date(reading.timestamp).toLocaleString();
+  document.getElementById('wifiSignal').textContent = (reading.wifi_rssi || '--') + ' dBm';
   
   // Alert banner
+  const alertBanner = document.getElementById('alertBanner');
   if (ambientAlert || fridgeAlert) {
     const details = [];
     if (ambientAlert) details.push('Ambient: ' + ambient.toFixed(1) + '°C');
     if (fridgeAlert) details.push('Fridge: ' + fridge.toFixed(1) + '°C');
-    elements.alertDetails.textContent = details.join(' | ');
-    elements.alertBanner.classList.add('show');
+    document.getElementById('alertDetails').textContent = details.join(' | ');
+    alertBanner.classList.add('show');
   } else {
-    elements.alertBanner.classList.remove('show');
+    alertBanner.classList.remove('show');
   }
 }
 
 async function loadStats() {
-  if (!sb) return;
+  if (!supabaseClient) return;
   
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   
   try {
-    const { data } = await sb
+    // Today's data
+    const { data } = await supabaseClient
       .from('temperature_readings')
       .select('ambient_temp, freezer_temp, ambient_alert, freezer_alert')
       .gte('timestamp', todayStart);
@@ -547,48 +523,44 @@ async function loadStats() {
       const ambientTemps = data.map(r => parseFloat(r.ambient_temp));
       const fridgeTemps = data.map(r => parseFloat(r.freezer_temp));
       
-      const avgAmbient = ambientTemps.reduce((a, b) => a + b, 0) / ambientTemps.length;
-      const avgFridge = fridgeTemps.reduce((a, b) => a + b, 0) / fridgeTemps.length;
-      
-      elements.avgAmbient.textContent = avgAmbient.toFixed(1) + '°C';
-      elements.avgFridge.textContent = avgFridge.toFixed(1) + '°C';
-      
-      elements.ambientMin.textContent = Math.min(...ambientTemps).toFixed(1) + '°C';
-      elements.ambientMax.textContent = Math.max(...ambientTemps).toFixed(1) + '°C';
-      elements.fridgeMin.textContent = Math.min(...fridgeTemps).toFixed(1) + '°C';
-      elements.fridgeMax.textContent = Math.max(...fridgeTemps).toFixed(1) + '°C';
+      document.getElementById('avgAmbient').textContent = (ambientTemps.reduce((a, b) => a + b, 0) / ambientTemps.length).toFixed(1) + '°C';
+      document.getElementById('avgFridge').textContent = (fridgeTemps.reduce((a, b) => a + b, 0) / fridgeTemps.length).toFixed(1) + '°C';
+      document.getElementById('ambientMin').textContent = Math.min(...ambientTemps).toFixed(1) + '°C';
+      document.getElementById('ambientMax').textContent = Math.max(...ambientTemps).toFixed(1) + '°C';
+      document.getElementById('fridgeMin').textContent = Math.min(...fridgeTemps).toFixed(1) + '°C';
+      document.getElementById('fridgeMax').textContent = Math.max(...fridgeTemps).toFixed(1) + '°C';
       
       const alertCount = data.filter(r => r.ambient_alert || r.freezer_alert).length;
-      elements.todayAlerts.textContent = alertCount;
-      elements.todayAlerts.style.color = alertCount > 0 ? 'var(--red)' : 'var(--green)';
+      document.getElementById('todayAlerts').textContent = alertCount;
+      document.getElementById('todayAlerts').style.color = alertCount > 0 ? 'var(--red)' : 'var(--green)';
     }
     
     // Week count
     const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { count: weekCount } = await sb
+    const { count: weekCount } = await supabaseClient
       .from('temperature_readings')
       .select('*', { count: 'exact', head: true })
       .gte('timestamp', weekAgo);
-    elements.weekCount.textContent = weekCount || 0;
+    document.getElementById('weekCount').textContent = weekCount || 0;
     
     // Month count
     const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const { count: monthCount } = await sb
+    const { count: monthCount } = await supabaseClient
       .from('temperature_readings')
       .select('*', { count: 'exact', head: true })
       .gte('timestamp', monthAgo);
-    elements.monthCount.textContent = monthCount || 0;
+    document.getElementById('monthCount').textContent = monthCount || 0;
     
-  } catch (e) {
-    console.error('[Stats] Error:', e);
+  } catch (error) {
+    console.error('Load stats error:', error);
   }
 }
 
 async function loadRecentReadings() {
-  if (!sb) return;
+  if (!supabaseClient) return;
   
   try {
-    const { data, error } = await sb
+    const { data, error } = await supabaseClient
       .from('temperature_readings')
       .select('*')
       .order('timestamp', { ascending: false })
@@ -596,12 +568,14 @@ async function loadRecentReadings() {
     
     if (error) throw error;
     
+    const tbody = document.getElementById('readingsTable');
+    
     if (!data || data.length === 0) {
-      elements.readingsTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px">No data yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text2)">No data yet. Waiting for ESP32...</td></tr>';
       return;
     }
     
-    elements.readingsTable.innerHTML = data.map(r => {
+    tbody.innerHTML = data.map(r => {
       const hasAlert = r.ambient_alert || r.freezer_alert;
       return `
         <tr>
@@ -609,56 +583,55 @@ async function loadRecentReadings() {
           <td style="color:${r.ambient_alert ? 'var(--red)' : 'var(--cyan)'}">${parseFloat(r.ambient_temp).toFixed(1)}°C</td>
           <td style="color:${r.freezer_alert ? 'var(--red)' : 'var(--blue)'}">${parseFloat(r.freezer_temp).toFixed(1)}°C</td>
           <td>${r.wifi_rssi || '--'} dBm</td>
-          <td><span class="badge ${hasAlert ? 'alert' : 'ok'}">${hasAlert ? '⚠️' : '✓'}</span></td>
+          <td><span class="badge ${hasAlert ? 'alert' : 'ok'}">${hasAlert ? '⚠️ Alert' : '✓ OK'}</span></td>
         </tr>
       `;
     }).join('');
-  } catch (e) {
-    console.error('[Table] Error:', e);
+  } catch (error) {
+    console.error('Load readings error:', error);
   }
 }
 
-// ==================== ALERT STATE ====================
 async function checkAlertState() {
-  if (!sb) return;
+  if (!supabaseClient) return;
   
   try {
-    const { data, error } = await sb
+    const { data } = await supabaseClient
       .from('alert_state')
       .select('*')
       .eq('id', 1)
       .single();
     
-    if (error) throw error;
-    
     if (data) {
+      const statusEl = document.getElementById('alertStatus');
       if (data.is_acknowledged) {
-        elements.alertStatus.textContent = 'Acknowledged';
-        elements.alertStatus.style.color = 'var(--yellow)';
+        statusEl.textContent = 'Acknowledged';
+        statusEl.style.color = 'var(--yellow)';
       } else if (data.current_alert_started) {
-        elements.alertStatus.textContent = 'ALERT';
-        elements.alertStatus.style.color = 'var(--red)';
+        statusEl.textContent = 'ACTIVE ALERT';
+        statusEl.style.color = 'var(--red)';
       } else {
-        elements.alertStatus.textContent = 'Normal';
-        elements.alertStatus.style.color = 'var(--green)';
+        statusEl.textContent = 'Normal';
+        statusEl.style.color = 'var(--green)';
       }
     }
-  } catch (e) {
-    console.error('[AlertState] Error:', e);
+  } catch (error) {
+    console.error('Check alert state error:', error);
   }
 }
 
 async function acknowledgeAlert() {
   if (isDemoMode) {
-    showToast('Login required to acknowledge', 'error');
+    showToast('Login required to acknowledge alerts', 'error');
     return;
   }
   
-  elements.ackBtn.disabled = true;
-  elements.ackBtn.textContent = 'Acknowledging...';
+  const btn = document.getElementById('ackBtn');
+  btn.disabled = true;
+  btn.textContent = 'Acknowledging...';
   
   try {
-    const { error } = await sb
+    const { error } = await supabaseClient
       .from('alert_state')
       .update({
         is_acknowledged: true,
@@ -668,16 +641,16 @@ async function acknowledgeAlert() {
     
     if (error) throw error;
     
-    elements.alertBanner.classList.remove('show');
-    elements.alertStatus.textContent = 'Acknowledged';
-    elements.alertStatus.style.color = 'var(--yellow)';
+    document.getElementById('alertBanner').classList.remove('show');
+    document.getElementById('alertStatus').textContent = 'Acknowledged';
+    document.getElementById('alertStatus').style.color = 'var(--yellow)';
     showToast('Alert acknowledged!', 'success');
-  } catch (e) {
-    console.error('[Ack] Error:', e);
+  } catch (error) {
+    console.error('Acknowledge error:', error);
     showToast('Failed to acknowledge', 'error');
   } finally {
-    elements.ackBtn.disabled = isDemoMode;
-    elements.ackBtn.textContent = '✓ Acknowledge';
+    btn.disabled = isDemoMode;
+    btn.textContent = '✓ Acknowledge';
   }
 }
 
@@ -690,7 +663,7 @@ function initChart() {
       labels: [],
       datasets: [
         {
-          label: 'Ambient',
+          label: 'Ambient °C',
           data: [],
           borderColor: '#4cc9f0',
           backgroundColor: 'rgba(76,201,240,0.1)',
@@ -698,7 +671,7 @@ function initChart() {
           tension: 0.4
         },
         {
-          label: 'Fridge',
+          label: 'Fridge °C',
           data: [],
           borderColor: '#4361ee',
           backgroundColor: 'rgba(67,97,238,0.1)',
@@ -721,8 +694,8 @@ function initChart() {
   });
 }
 
-async function loadChart(period) {
-  if (!sb || !chart) return;
+async function loadChartData(period = 'daily') {
+  if (!supabaseClient || !chart) return;
   
   const now = new Date();
   let startDate;
@@ -739,16 +712,15 @@ async function loadChart(period) {
   }
   
   try {
-    const { data, error } = await sb
+    const { data } = await supabaseClient
       .from('temperature_readings')
       .select('timestamp, ambient_temp, freezer_temp')
       .gte('timestamp', startDate.toISOString())
       .order('timestamp');
     
-    if (error) throw error;
     if (!data || data.length === 0) return;
     
-    // Sample data if too many points
+    // Sample if too many points
     const sampled = data.length > 100 
       ? data.filter((_, i) => i % Math.ceil(data.length / 100) === 0)
       : data;
@@ -759,21 +731,22 @@ async function loadChart(period) {
     chart.data.datasets[0].data = sampled.map(r => parseFloat(r.ambient_temp));
     chart.data.datasets[1].data = sampled.map(r => parseFloat(r.freezer_temp));
     chart.update();
-  } catch (e) {
-    console.error('[Chart] Error:', e);
+  } catch (error) {
+    console.error('Load chart error:', error);
   }
 }
 
 // ==================== REALTIME ====================
-function setupRealtime() {
-  if (!sb) return;
+function setupRealtimeSubscription() {
+  if (!supabaseClient) return;
   
-  sb.channel('readings')
+  supabaseClient
+    .channel('temperature_changes')
     .on('postgres_changes', 
       { event: 'INSERT', schema: 'public', table: 'temperature_readings' },
       payload => {
-        console.log('[Realtime] New reading');
-        updateDisplay(payload.new);
+        console.log('New reading received');
+        updateTemperatureDisplay(payload.new);
         loadRecentReadings();
         loadStats();
       }
@@ -781,43 +754,48 @@ function setupRealtime() {
     .subscribe();
 }
 
-// ==================== PUSH NOTIFICATIONS ====================
+// ==================== NOTIFICATIONS ====================
 async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   
   try {
-    swReg = await navigator.serviceWorker.register('/sw.js');
-    console.log('[SW] Registered');
-  } catch (e) {
-    console.error('[SW] Registration failed:', e);
+    serviceWorkerReg = await navigator.serviceWorker.register('/sw.js');
+    console.log('Service worker registered');
+  } catch (error) {
+    console.error('Service worker error:', error);
   }
 }
 
 function updateNotificationUI() {
+  const icon = document.getElementById('notifIcon');
+  const title = document.getElementById('notifTitle');
+  const desc = document.getElementById('notifDesc');
+  const btn = document.getElementById('enableNotifBtn');
+  
   if (!('Notification' in window)) {
-    elements.notifIcon.className = 'notif-icon blocked';
-    elements.notifIcon.textContent = '🚫';
-    elements.notifTitle.textContent = 'Not Supported';
-    elements.notifDesc.textContent = 'Push notifications not available';
-    elements.enableNotifBtn.disabled = true;
+    icon.className = 'notif-icon blocked';
+    icon.textContent = '🚫';
+    title.textContent = 'Not Supported';
+    desc.textContent = 'Your browser does not support notifications';
+    btn.disabled = true;
     return;
   }
   
   const permission = Notification.permission;
   
   if (permission === 'granted') {
-    elements.notifIcon.className = 'notif-icon enabled';
-    elements.notifIcon.textContent = '✅';
-    elements.notifTitle.textContent = 'Notifications Enabled';
-    elements.notifDesc.textContent = 'You will receive temperature alerts';
-    elements.enableNotifBtn.textContent = '✓ Enabled';
-    elements.enableNotifBtn.disabled = true;
+    icon.className = 'notif-icon enabled';
+    icon.textContent = '✅';
+    title.textContent = 'Notifications Enabled';
+    desc.textContent = 'You will receive temperature alerts';
+    btn.textContent = '✓ Enabled';
+    btn.disabled = true;
   } else if (permission === 'denied') {
-    elements.notifIcon.className = 'notif-icon blocked';
-    elements.notifIcon.textContent = '🚫';
-    elements.notifTitle.textContent = 'Notifications Blocked';
-    elements.notifDesc.textContent = 'Enable in browser settings';
-    elements.enableNotifBtn.disabled = true;
+    icon.className = 'notif-icon blocked';
+    icon.textContent = '🚫';
+    title.textContent = 'Notifications Blocked';
+    desc.textContent = 'Please enable in browser settings';
+    btn.disabled = true;
   }
 }
 
@@ -827,45 +805,45 @@ async function enableNotifications() {
     
     if (permission === 'granted') {
       showToast('Notifications enabled!', 'success');
-      await subscribePush();
+      await subscribeToPush();
     } else {
-      showToast('Permission denied', 'error');
+      showToast('Notification permission denied', 'error');
     }
     
     updateNotificationUI();
-  } catch (e) {
-    console.error('[Notif] Error:', e);
+  } catch (error) {
+    console.error('Enable notifications error:', error);
     showToast('Error enabling notifications', 'error');
   }
 }
 
-async function subscribePush() {
-  if (!swReg || !sb) return;
+async function subscribeToPush() {
+  if (!serviceWorkerReg || !supabaseClient) return;
   
   try {
-    const subscription = await swReg.pushManager.subscribe({
+    const subscription = await serviceWorkerReg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(CONFIG.VAPID_PUBLIC_KEY)
     });
     
     const json = subscription.toJSON();
     
-    await sb.from('push_subscriptions').upsert({
+    await supabaseClient.from('push_subscriptions').upsert({
       endpoint: json.endpoint,
       p256dh: json.keys.p256dh,
       auth: json.keys.auth,
       user_agent: navigator.userAgent
     }, { onConflict: 'endpoint' });
     
-    console.log('[Push] Subscription saved');
-  } catch (e) {
-    console.error('[Push] Subscribe error:', e);
+    console.log('Push subscription saved');
+  } catch (error) {
+    console.error('Push subscription error:', error);
   }
 }
 
 function testNotification() {
   if (Notification.permission !== 'granted') {
-    showToast('Enable notifications first', 'error');
+    showToast('Please enable notifications first', 'error');
     return;
   }
   
@@ -879,132 +857,142 @@ function testNotification() {
 
 // ==================== ACTIONS ====================
 async function refreshData() {
-  showToast('Refreshing...', 'info');
-  await loadCurrentReading();
-  await loadStats();
-  await loadRecentReadings();
-  await checkAlertState();
+  showToast('Refreshing data...', 'info');
+  
+  await Promise.all([
+    loadCurrentReading(),
+    loadStats(),
+    loadRecentReadings(),
+    checkAlertState()
+  ]);
+  
   showToast('Data refreshed!', 'success');
 }
 
-function downloadCSV() {
-  if (!sb) return;
-  
-  sb.from('temperature_readings')
-    .select('*')
-    .order('timestamp', { ascending: false })
-    .then(({ data, error }) => {
-      if (error || !data) {
-        showToast('Download failed', 'error');
-        return;
-      }
-      
-      const csv = 'Timestamp,Ambient,Fridge,Ambient_Alert,Fridge_Alert,WiFi\n' +
-        data.map(r => 
-          `${r.timestamp},${r.ambient_temp},${r.freezer_temp},${r.ambient_alert},${r.freezer_alert},${r.wifi_rssi}`
-        ).join('\n');
-      
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `hasmed_temps_${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      
-      showToast('Downloaded!', 'success');
-    });
-}
-
-// ==================== DASHBOARD LOADING ====================
-async function loadDashboard() {
-  setLoading(true, 'Loading dashboard...');
+async function downloadCSV() {
+  if (!supabaseClient) return;
   
   try {
-    await loadCurrentReading();
-    await loadStats();
-    await loadRecentReadings();
-    await checkAlertState();
-    initChart();
-    await loadChart('daily');
-    setupRealtime();
+    const { data } = await supabaseClient
+      .from('temperature_readings')
+      .select('*')
+      .order('timestamp', { ascending: false });
     
-    // Periodic refresh
+    if (!data || data.length === 0) {
+      showToast('No data to export', 'error');
+      return;
+    }
+    
+    const csv = 'Timestamp,Ambient_Temp,Fridge_Temp,Ambient_Alert,Fridge_Alert,WiFi_RSSI\n' +
+      data.map(r => 
+        `${r.timestamp},${r.ambient_temp},${r.freezer_temp},${r.ambient_alert},${r.freezer_alert},${r.wifi_rssi}`
+      ).join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hasmed_temperatures_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('CSV downloaded!', 'success');
+  } catch (error) {
+    console.error('Download error:', error);
+    showToast('Download failed', 'error');
+  }
+}
+
+// ==================== DASHBOARD INITIALIZATION ====================
+async function initDashboard() {
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  document.getElementById('loadingText').textContent = 'Loading dashboard...';
+  
+  try {
+    await Promise.all([
+      loadCurrentReading(),
+      loadStats(),
+      loadRecentReadings(),
+      checkAlertState()
+    ]);
+    
+    initChart();
+    await loadChartData('daily');
+    setupRealtimeSubscription();
+    
+    // Auto-refresh every 30 seconds
     setInterval(async () => {
       await loadCurrentReading();
       await loadStats();
       await checkAlertState();
     }, 30000);
     
-  } catch (e) {
-    console.error('[Dashboard] Load error:', e);
+  } catch (error) {
+    console.error('Dashboard init error:', error);
     showToast('Error loading dashboard', 'error');
   } finally {
-    setLoading(false);
+    document.getElementById('loadingOverlay').classList.add('hidden');
   }
 }
 
-// ==================== INITIALIZATION ====================
-async function init() {
-  console.log('[Init] Starting...');
+// ==================== EVENT LISTENERS ====================
+document.addEventListener('DOMContentLoaded', async () => {
+  // Login form
+  document.getElementById('loginForm').addEventListener('submit', handleLogin);
   
-  // Setup event listeners
-  elements.loginForm.addEventListener('submit', handleLogin);
-  elements.demoBtn.addEventListener('click', handleDemoLogin);
-  elements.logoutBtn.addEventListener('click', logout);
-  elements.ackBtn.addEventListener('click', acknowledgeAlert);
-  elements.refreshBtn.addEventListener('click', refreshData);
-  elements.downloadBtn.addEventListener('click', downloadCSV);
-  elements.enableNotifBtn.addEventListener('click', enableNotifications);
-  elements.testNotifBtn.addEventListener('click', testNotification);
+  // Demo button - FIXED!
+  document.getElementById('demoBtn').addEventListener('click', demoLogin);
+  
+  // Other buttons
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+  document.getElementById('ackBtn').addEventListener('click', acknowledgeAlert);
+  document.getElementById('refreshBtn').addEventListener('click', refreshData);
+  document.getElementById('downloadBtn').addEventListener('click', downloadCSV);
+  document.getElementById('enableNotifBtn').addEventListener('click', enableNotifications);
+  document.getElementById('testNotifBtn').addEventListener('click', testNotification);
   
   // Chart tabs
-  elements.chartTabs.addEventListener('click', (e) => {
+  document.getElementById('chartTabs').addEventListener('click', (e) => {
     if (e.target.classList.contains('chart-tab')) {
-      elements.chartTabs.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
       e.target.classList.add('active');
-      loadChart(e.target.dataset.period);
+      loadChartData(e.target.dataset.period);
     }
   });
   
-  // Install banner
+  // Install prompt
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    deferredPrompt = e;
-    elements.installBanner.classList.add('show');
+    deferredInstallPrompt = e;
+    document.getElementById('installBanner').classList.add('show');
   });
   
-  elements.installBtn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      elements.installBanner.classList.remove('show');
+  document.getElementById('installBtn').addEventListener('click', async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      document.getElementById('installBanner').classList.remove('show');
     }
   });
-  
-  // Check URL params for auto-acknowledge
-  if (new URLSearchParams(location.search).get('ack') === '1') {
-    history.replaceState(null, '', '/');
-  }
   
   // Initialize Supabase
   const connected = await initSupabase();
   
-  // Check for saved session
+  // Check for saved login
   if (sessionStorage.getItem('loggedIn') === 'true') {
     isLoggedIn = true;
-    elements.loginOverlay.classList.add('hidden');
-    elements.logoutBtn.style.display = 'block';
-    elements.userDisplay.textContent = 'Admin';
-    loadDashboard();
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('logoutBtn').style.display = 'block';
+    document.getElementById('userDisplay').textContent = 'Admin';
+    document.getElementById('ackBtn').disabled = false;
+    initDashboard();
   }
   
-  // Register service worker
+  // Register service worker and update notification UI
   registerServiceWorker();
   updateNotificationUI();
-}
-
-// Start
-document.addEventListener('DOMContentLoaded', init);
+});
 </script>
 </body>
 </html>
