@@ -29,7 +29,6 @@
     .actions{display:flex;gap:8px;flex-wrap:wrap}
     button{border:1px solid var(--border);background:transparent;color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px}
     button.primary{background:var(--accent);border-color:transparent}
-    button.danger{background:rgba(255,77,94,.12);border-color:rgba(255,77,94,.35)}
     button:disabled{opacity:.5;cursor:not-allowed}
 
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
@@ -65,100 +64,29 @@
     .banner .b1{font-weight:900}
     .banner .b2{color:rgba(234,240,255,.8);font-size:13px}
 
+    /* STALE DATA BANNER */
+    .stale{
+      display:none;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,77,94,.7);
+      background:rgba(255,77,94,.12);
+      margin:10px 0;
+    }
+    .stale.show{display:flex}
+    .stale .h{font-weight:900;color:var(--bad)}
+    .stale .p{color:rgba(234,240,255,.85);font-size:13px}
+    .stale a{color:var(--text);font-weight:800;text-decoration:none}
+
     .toast{position:fixed;right:14px;top:14px;display:flex;flex-direction:column;gap:8px;z-index:50}
     .toast .t{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px}
-
-    /* ===== Login modal ===== */
-    .overlay{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      z-index:1000;
-    }
-    .overlay.show{display:flex}
-    .loginCard{
-      width:100%;
-      max-width:420px;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:16px;
-    }
-    .loginHead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-    .loginHead img{width:42px;height:42px;border-radius:12px}
-    .loginHead .h1{font-weight:900}
-    .loginHead .h2{font-size:12px;color:var(--muted)}
-    .field{margin-top:10px}
-    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700}
-    .field input{
-      width:100%;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:rgba(0,0,0,.15);
-      color:var(--text);
-      font-size:14px;
-      outline:none;
-    }
-    .field input:focus{border-color:rgba(79,124,255,.7)}
-    .errBox{
-      display:none;
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,77,94,.45);
-      background:rgba(255,77,94,.10);
-      color:rgba(234,240,255,.9);
-      font-size:13px;
-    }
-    .errBox.show{display:block}
-    .loginActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    .loginActions button{flex:1}
-    .loginNote{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.4}
-    .hideApp{display:none}
   </style>
 </head>
-
 <body>
-  <!-- Login overlay -->
-  <div class="overlay" id="loginOverlay">
-    <div class="loginCard">
-      <div class="loginHead">
-        <img src="icon-192.png" alt="logo" />
-        <div>
-          <div class="h1">Hasmed Pharmacy Monitor</div>
-          <div class="h2">Sign in to view dashboard</div>
-        </div>
-      </div>
-
-      <div class="errBox" id="loginErr">Invalid login</div>
-
-      <form id="loginForm">
-        <div class="field">
-          <label for="email">Email</label>
-          <input id="email" type="email" autocomplete="username" required />
-        </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input id="password" type="password" autocomplete="current-password" required />
-        </div>
-
-        <div class="loginActions">
-          <button class="primary" type="submit" id="btnLogin">Sign In</button>
-          <button type="button" id="btnReset">Send reset email</button>
-        </div>
-
-        <div class="loginNote">
-          Account creation is not exposed on the site. Accounts must be created in Supabase Auth by the administrator.
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="wrap" id="appRoot">
+  <div class="wrap">
     <div class="topbar">
       <div class="brand">
         <img src="icon-192.png" alt="logo" />
@@ -168,7 +96,6 @@
         </div>
       </div>
       <div class="actions">
-        <button id="btnLogout" class="danger">Logout</button>
         <button id="btnAck" class="primary">Acknowledge</button>
         <button id="btnRefresh">Refresh</button>
         <button id="btnCsv">Export CSV (5 years)</button>
@@ -181,6 +108,17 @@
         <div class="b2" id="alertText">Out of range</div>
       </div>
       <div class="pill bad" id="ackState">Not acknowledged</div>
+    </div>
+
+    <!-- STALE DATA BANNER -->
+    <div id="staleBanner" class="stale">
+      <div>
+        <div class="h">NO DATA UPDATE (10+ MINUTES)</div>
+        <div class="p" id="staleText">
+          Please contact technician. Leave a message on WhatsApp: <a href="https://wa.me/27767861007" target="_blank" rel="noopener">076 786 1007</a>
+        </div>
+      </div>
+      <div class="pill bad" id="staleAge">--</div>
     </div>
 
     <div class="grid">
@@ -238,7 +176,6 @@
   <div class="toast" id="toast"></div>
 
 <script>
-  // ===================== CONFIG =====================
   const SUPABASE_URL = "https://avxakvxjgpwzctuagaww.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo";
   const AMBIENT_MIN=15, AMBIENT_MAX=25, FRIDGE_MIN=2, FRIDGE_MAX=8;
@@ -253,85 +190,12 @@
     setTimeout(()=>d.remove(), 3000);
   };
 
-  // ===================== LOGIN GATE =====================
-  let chart=null;
   let period="today";
-  let realtimeChannel=null;
+  let chart=null;
 
-  function showLogin(show){
-    $("loginOverlay").classList.toggle("show", !!show);
-    $("appRoot").classList.toggle("hideApp", !!show);
-  }
+  const STALE_LIMIT_MS = 10 * 60 * 1000;
+  let lastReadingTsMs = null;
 
-  function setLoginError(msg){
-    const el = $("loginErr");
-    if (!msg){ el.classList.remove("show"); el.textContent=""; return; }
-    el.textContent = msg;
-    el.classList.add("show");
-  }
-
-  async function ensureSessionAndStart(){
-    const { data } = await sb.auth.getSession();
-    const hasSession = !!(data && data.session);
-
-    if (!hasSession){
-      showLogin(true);
-      return;
-    }
-
-    showLogin(false);
-    await startApp();
-  }
-
-  $("loginForm").addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    setLoginError("");
-
-    const email = $("email").value.trim();
-    const password = $("password").value;
-
-    $("btnLogin").disabled = true;
-    try{
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      if (!data || !data.session) throw new Error("Login failed");
-      toast("Signed in");
-      showLogin(false);
-      await startApp();
-    }catch(err){
-      setLoginError(err.message || "Login failed");
-    }finally{
-      $("btnLogin").disabled = false;
-    }
-  });
-
-  $("btnReset").addEventListener("click", async ()=>{
-    setLoginError("");
-    const email = $("email").value.trim();
-    if (!email){ setLoginError("Enter email first"); return; }
-    try{
-      const { error } = await sb.auth.resetPasswordForEmail(email);
-      if (error) throw error;
-      toast("Reset email sent");
-    }catch(err){
-      setLoginError(err.message || "Reset failed");
-    }
-  });
-
-  $("btnLogout").addEventListener("click", async ()=>{
-    try{
-      await sb.auth.signOut();
-      toast("Logged out");
-    }finally{
-      if (realtimeChannel){
-        try{ await sb.removeChannel(realtimeChannel); }catch{}
-        realtimeChannel=null;
-      }
-      showLogin(true);
-    }
-  });
-
-  // ===================== DASHBOARD =====================
   function fmt(n){ return (Number.isFinite(n) ? n.toFixed(1) : "--.-"); }
   function isBadAmbient(x){ return x<AMBIENT_MIN || x>AMBIENT_MAX; }
   function isBadFridge(x){ return x<FRIDGE_MIN || x>FRIDGE_MAX; }
@@ -340,6 +204,35 @@
     el.classList.toggle("ok", ok);
     el.classList.toggle("bad", !ok);
     el.textContent = ok ? textOk : textBad;
+  }
+
+  function fmtAge(ms){
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${m}m ${s}s`;
+  }
+
+  function updateStaleBanner(){
+    const el = $("staleBanner");
+    const ageEl = $("staleAge");
+
+    if (!lastReadingTsMs) {
+      el.classList.add("show");
+      $("staleText").innerHTML = `No readings loaded. Please contact technician on WhatsApp: <a href="https://wa.me/27767861007" target="_blank" rel="noopener">076 786 1007</a>`;
+      ageEl.textContent = "No data";
+      return;
+    }
+
+    const age = Date.now() - lastReadingTsMs;
+
+    if (age >= STALE_LIMIT_MS) {
+      el.classList.add("show");
+      $("staleText").innerHTML = `Please contact technician. Leave a message on WhatsApp: <a href="https://wa.me/27767861007" target="_blank" rel="noopener">076 786 1007</a>`;
+      ageEl.textContent = "Age " + fmtAge(age);
+    } else {
+      el.classList.remove("show");
+      ageEl.textContent = "";
+    }
   }
 
   async function loadCounts(){
@@ -351,7 +244,13 @@
     const { data } = await sb.from("temperature_readings")
       .select("*").order("timestamp", { ascending:false }).limit(1).single();
 
-    if (!data) return;
+    if (!data) {
+      lastReadingTsMs = null;
+      updateStaleBanner();
+      return;
+    }
+
+    lastReadingTsMs = new Date(data.timestamp).getTime();
 
     const a = parseFloat(data.ambient_temp);
     const f = parseFloat(data.freezer_temp);
@@ -372,6 +271,8 @@
 
     $("pillConn").textContent = "Connected";
     $("pillConn").classList.add("ok");
+
+    updateStaleBanner();
   }
 
   async function loadAlertState(){
@@ -550,33 +451,6 @@
     await loadTable();
   }
 
-  async function startRealtime(){
-    if (realtimeChannel){
-      try{ await sb.removeChannel(realtimeChannel); }catch{}
-      realtimeChannel=null;
-    }
-
-    realtimeChannel = sb.channel("readings")
-      .on("postgres_changes",{event:"INSERT",schema:"public",table:"temperature_readings"}, async ()=> {
-        await loadLatest();
-        if (period==="today") await loadSeries();
-        await loadTable();
-      });
-
-    realtimeChannel.subscribe();
-  }
-
-  async function startApp(){
-    if (!chart) initChart();
-
-    await refreshAll();
-    await startRealtime();
-
-    if (!window._alertPoll){
-      window._alertPoll = setInterval(loadAlertState, 5000);
-    }
-  }
-
   $("btnAck").addEventListener("click", ack);
   $("btnRefresh").addEventListener("click", ()=>{ toast("Refreshing"); refreshAll(); });
   $("btnCsv").addEventListener("click", ()=> exportCSVYears(5));
@@ -590,15 +464,22 @@
     loadSeries();
   });
 
-  // Keep UI in sync if session expires
-  sb.auth.onAuthStateChange((_event, session)=>{
-    if (!session){
-      showLogin(true);
-    }
-  });
+  (async ()=>{
+    initChart();
+    await refreshAll();
 
-  // Boot
-  ensureSessionAndStart();
+    sb.channel("readings")
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"temperature_readings"}, async ()=>{
+        await loadLatest();
+        if (period==="today") await loadSeries();
+        await loadTable();
+        updateStaleBanner();
+      })
+      .subscribe();
+
+    setInterval(loadAlertState, 5000);
+    setInterval(updateStaleBanner, 1000);
+  })();
 </script>
 </body>
 </html>
