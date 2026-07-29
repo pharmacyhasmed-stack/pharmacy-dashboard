@@ -83,6 +83,14 @@
 
     .toast{position:fixed;right:14px;top:14px;display:flex;flex-direction:column;gap:8px;z-index:50}
     .toast .t{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px}
+    input{width:100%;border:1px solid var(--border);background:#0b1220;color:var(--text);border-radius:10px;padding:10px 12px;font-size:13px}
+    input[type="checkbox"]{width:auto}
+    label{display:block;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
+    .formGrid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
+    .field{grid-column:span 12}
+    @media(min-width:700px){.field.half{grid-column:span 6}.field.third{grid-column:span 4}}
+    .muted{color:var(--muted);font-size:13px}
+    .hide{display:none!important}
   </style>
 </head>
 <body>
@@ -99,6 +107,25 @@
         <button id="btnAck" class="primary">Acknowledge</button>
         <button id="btnRefresh">Refresh</button>
         <button id="btnCsv">Export CSV (5 years)</button>
+        <button id="btnSignOut" class="hide">Sign out</button>
+      </div>
+    </div>
+
+    <div id="authCard" class="card">
+      <div class="kpiTitle"><div class="lbl">Authorized access</div><div class="pill" id="authState">Signed out</div></div>
+      <div class="formGrid">
+        <div class="field half">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="username" />
+        </div>
+        <div class="field half">
+          <label for="password">Password</label>
+          <input id="password" type="password" autocomplete="current-password" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
+        <button id="btnSignIn" class="primary">Sign in</button>
+        <span class="muted" id="authHelp">Use the authorized dashboard account.</span>
       </div>
     </div>
 
@@ -128,8 +155,8 @@
           <div class="pill" id="pillAmbient">OK</div>
         </div>
         <div class="val" id="vAmbient">--.-</div>
-        <div class="row"><span>Range</span><span>15.0 to 25.0 °C</span></div>
-        <div class="row"><span>Avg (selected)</span><span id="avgAmbient">--.- °C</span></div>
+        <div class="row"><span>Range</span><span id="ambientRange">--</span></div>
+        <div class="row"><span>Avg (selected)</span><span id="avgAmbient">--.- &deg;C</span></div>
       </div>
 
       <div class="card c6" id="cardFridge">
@@ -138,15 +165,37 @@
           <div class="pill" id="pillFridge">OK</div>
         </div>
         <div class="val" id="vFridge">--.-</div>
-        <div class="row"><span>Range</span><span>2.0 to 8.0 °C</span></div>
-        <div class="row"><span>Avg (selected)</span><span id="avgFridge">--.- °C</span></div>
+        <div class="row"><span>Range</span><span id="fridgeRange">--</span></div>
+        <div class="row"><span>Avg (selected)</span><span id="avgFridge">--.- &deg;C</span></div>
       </div>
 
       <div class="card c4">
         <div class="kpiTitle"><div class="lbl">System</div><div class="pill" id="pillConn">Loading</div></div>
+        <div class="row"><span>Device</span><span id="deviceName">--</span></div>
         <div class="row"><span>Last update</span><span id="lastTs">--</span></div>
         <div class="row"><span>WiFi RSSI</span><span id="rssi">--</span></div>
+        <div class="row"><span>Last sequence</span><span id="lastSeq">--</span></div>
+        <div class="row"><span>Incident</span><span id="incidentState">--</span></div>
         <div class="row"><span>Records (total)</span><span id="totalCount">--</span></div>
+      </div>
+
+      <div class="card c8">
+        <div class="kpiTitle"><div class="lbl">Settings</div><div class="pill" id="settingsState">Read only until loaded</div></div>
+        <div class="formGrid">
+          <div class="field third"><label for="ambientMin">Ambient min</label><input id="ambientMin" type="number" step="0.1" /></div>
+          <div class="field third"><label for="ambientMax">Ambient max</label><input id="ambientMax" type="number" step="0.1" /></div>
+          <div class="field third"><label for="offlineAfter">Offline minutes</label><input id="offlineAfter" type="number" step="1" min="1" /></div>
+          <div class="field third"><label for="fridgeMin">Fridge min</label><input id="fridgeMin" type="number" step="0.1" /></div>
+          <div class="field third"><label for="fridgeMax">Fridge max</label><input id="fridgeMax" type="number" step="0.1" /></div>
+          <div class="field third"><label for="alertAfter">Confirm count</label><input id="alertAfter" type="number" step="1" min="1" /></div>
+          <div class="field third"><label for="recoverAfter">Recovery count</label><input id="recoverAfter" type="number" step="1" min="1" /></div>
+          <div class="field third"><label for="emailEnabled">Email enabled</label><input id="emailEnabled" type="checkbox" /></div>
+          <div class="field third"><label for="pushEnabled">Push enabled</label><input id="pushEnabled" type="checkbox" /></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
+          <button id="btnSaveSettings" class="primary">Save settings</button>
+          <span class="muted" id="settingsHelp">Settings update requires an admin account.</span>
+        </div>
       </div>
 
       <div class="card c8">
@@ -178,141 +227,254 @@
 <script>
   const SUPABASE_URL = "https://avxakvxjgpwzctuagaww.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eGFrdnhqZ3B3emN0dWFnYXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5OTI3OTAsImV4cCI6MjA4MzU2ODc5MH0.G6lrbb0KJ0vkW0ZSJvwY6FemajmpRpRurK0Qd6H6YXo";
-  const AMBIENT_MIN=15, AMBIENT_MAX=25, FRIDGE_MIN=2, FRIDGE_MAX=8;
+  const DEFAULT_CONFIG = {
+    ambient_min: 15,
+    ambient_max: 25,
+    fridge_min: 2,
+    fridge_max: 8,
+    alert_after_consecutive_failures: 3,
+    recover_after_consecutive_normal: 3,
+    offline_after_minutes: 15,
+    email_enabled: false,
+    push_enabled: false,
+  };
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
   const $ = (id)=>document.getElementById(id);
   const toast = (msg)=>{
     const d=document.createElement("div");
     d.className="t"; d.textContent=msg;
     $("toast").appendChild(d);
-    setTimeout(()=>d.remove(), 3000);
+    setTimeout(()=>d.remove(), 4000);
   };
 
   let period="today";
   let chart=null;
+  let currentUser=null;
+  let currentDevice=null;
+  let currentConfig={...DEFAULT_CONFIG};
+  let activeIncident=null;
+  let readingsChannel=null;
+  let incidentsChannel=null;
+  let lastReadingTsMs=null;
 
-  const STALE_LIMIT_MS = 10 * 60 * 1000;
-  let lastReadingTsMs = null;
-
-  function fmt(n){ return (Number.isFinite(n) ? n.toFixed(1) : "--.-"); }
-  function isBadAmbient(x){ return x<AMBIENT_MIN || x>AMBIENT_MAX; }
-  function isBadFridge(x){ return x<FRIDGE_MIN || x>FRIDGE_MAX; }
-
+  function fmt(n){ return Number.isFinite(n) ? n.toFixed(1) : "--.-"; }
+  function cText(n){ return fmt(Number(n)) + " \u00b0C"; }
+  function one(value){ return Array.isArray(value) ? (value[0] ?? null) : (value ?? null); }
+  function readingTime(r){ return r?.captured_at || r?.received_at || null; }
+  function isBadAmbient(x){ return !Number.isFinite(x) || x<Number(currentConfig.ambient_min) || x>Number(currentConfig.ambient_max); }
+  function isBadFridge(x){ return !Number.isFinite(x) || x<Number(currentConfig.fridge_min) || x>Number(currentConfig.fridge_max); }
   function setPill(el, ok, textOk, textBad){
     el.classList.toggle("ok", ok);
     el.classList.toggle("bad", !ok);
     el.textContent = ok ? textOk : textBad;
   }
-
   function fmtAge(ms){
     const m = Math.floor(ms / 60000);
     const s = Math.floor((ms % 60000) / 1000);
     return `${m}m ${s}s`;
   }
-
+  function requireDevice(){
+    if (!currentUser) throw new Error("Sign in required");
+    if (!currentDevice) throw new Error("No device is available for this account");
+  }
+  function setSignedInUI(signedIn){
+    $("authCard").classList.toggle("hide", signedIn);
+    $("btnSignOut").classList.toggle("hide", !signedIn);
+    $("btnAck").disabled = !signedIn || !activeIncident || activeIncident.status === "ALERT_ACKNOWLEDGED";
+    $("btnRefresh").disabled = !signedIn;
+    $("btnCsv").disabled = !signedIn;
+    $("btnSaveSettings").disabled = !signedIn || !currentDevice;
+    $("authState").textContent = signedIn ? "Signed in" : "Signed out";
+    $("authState").classList.toggle("ok", signedIn);
+  }
+  function resetDashboard(){
+    currentDevice=null;
+    activeIncident=null;
+    lastReadingTsMs=null;
+    $("deviceName").textContent="--";
+    $("lastTs").textContent="--";
+    $("rssi").textContent="--";
+    $("lastSeq").textContent="--";
+    $("incidentState").textContent="--";
+    $("totalCount").textContent="--";
+    $("vAmbient").textContent="--.-";
+    $("vFridge").textContent="--.-";
+    $("pillRows").textContent="--";
+    $("tbody").innerHTML='<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Sign in to load readings</td></tr>';
+    $("alertBanner").classList.remove("show");
+    $("staleBanner").classList.remove("show");
+    if (chart) {
+      chart.data.datasets[0].data=[];
+      chart.data.datasets[1].data=[];
+      chart.update();
+    }
+  }
+  function updateConfigUI(){
+    $("ambientRange").innerHTML = `${cText(Number(currentConfig.ambient_min))} to ${cText(Number(currentConfig.ambient_max))}`;
+    $("fridgeRange").innerHTML = `${cText(Number(currentConfig.fridge_min))} to ${cText(Number(currentConfig.fridge_max))}`;
+    $("ambientMin").value = currentConfig.ambient_min ?? "";
+    $("ambientMax").value = currentConfig.ambient_max ?? "";
+    $("fridgeMin").value = currentConfig.fridge_min ?? "";
+    $("fridgeMax").value = currentConfig.fridge_max ?? "";
+    $("alertAfter").value = currentConfig.alert_after_consecutive_failures ?? "";
+    $("recoverAfter").value = currentConfig.recover_after_consecutive_normal ?? "";
+    $("offlineAfter").value = currentConfig.offline_after_minutes ?? "";
+    $("emailEnabled").checked = !!currentConfig.email_enabled;
+    $("pushEnabled").checked = !!currentConfig.push_enabled;
+    $("settingsState").textContent = currentDevice ? "Loaded" : "Read only until loaded";
+    $("settingsState").classList.toggle("ok", !!currentDevice);
+  }
   function updateStaleBanner(){
     const el = $("staleBanner");
     const ageEl = $("staleAge");
-
-    if (!lastReadingTsMs) {
+    const offlineMs = Math.max(1, Number(currentConfig.offline_after_minutes || 15)) * 60000;
+    const basis = currentDevice?.last_seen_at ? new Date(currentDevice.last_seen_at).getTime() : lastReadingTsMs;
+    if (!basis) {
       el.classList.add("show");
       $("staleText").innerHTML = `No readings loaded. Please contact technician on WhatsApp: <a href="https://wa.me/27767861007" target="_blank" rel="noopener">076 786 1007</a>`;
       ageEl.textContent = "No data";
+      setPill($("pillConn"), false, "Connected", "Offline");
       return;
     }
-
-    const age = Date.now() - lastReadingTsMs;
-
-    if (age >= STALE_LIMIT_MS) {
+    const age = Date.now() - basis;
+    if (age >= offlineMs) {
       el.classList.add("show");
       $("staleText").innerHTML = `Please contact technician. Leave a message on WhatsApp: <a href="https://wa.me/27767861007" target="_blank" rel="noopener">076 786 1007</a>`;
       ageEl.textContent = "Age " + fmtAge(age);
+      setPill($("pillConn"), false, "Connected", "Offline");
     } else {
       el.classList.remove("show");
       ageEl.textContent = "";
+      setPill($("pillConn"), true, "Connected", "Offline");
     }
   }
-
+  async function signIn(){
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    if (!email || !password) {
+      toast("Email and password are required");
+      return;
+    }
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      toast("Sign in failed: " + error.message);
+      return;
+    }
+    $("password").value="";
+    toast("Signed in");
+  }
+  async function signOut(){
+    await sb.auth.signOut();
+    currentUser=null;
+    resetDashboard();
+    setSignedInUI(false);
+  }
+  async function loadDevice(){
+    const { data, error } = await sb.from("devices")
+      .select("id,device_uid,name,location,active,firmware_version,last_seen_at,last_sequence_number,device_configuration(*)")
+      .eq("active", true)
+      .order("created_at", { ascending:true })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("No active device is assigned to this account");
+    currentDevice=data;
+    currentConfig={...DEFAULT_CONFIG, ...(one(data.device_configuration) || {})};
+    $("deviceName").textContent = data.name || data.device_uid || "--";
+    $("lastSeq").textContent = data.last_sequence_number ?? "--";
+    updateConfigUI();
+  }
   async function loadCounts(){
-    const { count } = await sb.from("temperature_readings").select("*", { count:"exact", head:true });
+    requireDevice();
+    const { count, error } = await sb.from("temperature_readings")
+      .select("*", { count:"exact", head:true })
+      .eq("device_id", currentDevice.id);
+    if (error) throw error;
     $("totalCount").textContent = count ?? "--";
   }
-
   async function loadLatest(){
-    const { data } = await sb.from("temperature_readings")
-      .select("*").order("timestamp", { ascending:false }).limit(1).single();
-
+    requireDevice();
+    const { data, error } = await sb.from("temperature_readings")
+      .select("id,sequence_number,ambient_temp,fridge_temp,ambient_valid,fridge_valid,wifi_rssi,captured_at,received_at")
+      .eq("device_id", currentDevice.id)
+      .order("received_at", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
     if (!data) {
-      lastReadingTsMs = null;
+      lastReadingTsMs=null;
       updateStaleBanner();
       return;
     }
-
-    lastReadingTsMs = new Date(data.timestamp).getTime();
-
-    const a = parseFloat(data.ambient_temp);
-    const f = parseFloat(data.freezer_temp);
-    const aBad = isBadAmbient(a);
-    const fBad = isBadFridge(f);
-
+    const ts = readingTime(data);
+    lastReadingTsMs = ts ? new Date(ts).getTime() : null;
+    const a = Number(data.ambient_temp);
+    const f = Number(data.fridge_temp);
+    const aBad = !data.ambient_valid || isBadAmbient(a);
+    const fBad = !data.fridge_valid || isBadFridge(f);
     $("vAmbient").textContent = fmt(a);
     $("vFridge").textContent = fmt(f);
-
     setPill($("pillAmbient"), !aBad, "OK", "ALERT");
     setPill($("pillFridge"), !fBad, "OK", "ALERT");
-
     $("cardAmbient").style.borderColor = aBad ? "rgba(255,77,94,.6)" : "var(--border)";
     $("cardFridge").style.borderColor  = fBad ? "rgba(255,77,94,.6)" : "var(--border)";
-
-    $("lastTs").textContent = new Date(data.timestamp).toLocaleString();
+    $("lastTs").textContent = ts ? new Date(ts).toLocaleString() : "--";
     $("rssi").textContent = (data.wifi_rssi ?? "--") + " dBm";
-
-    $("pillConn").textContent = "Connected";
-    $("pillConn").classList.add("ok");
-
+    currentDevice.last_sequence_number = data.sequence_number;
+    $("lastSeq").textContent = data.sequence_number ?? "--";
     updateStaleBanner();
   }
-
+  function incidentText(incident){
+    if (!incident) return "None open";
+    if (incident.status === "ALERT_ACKNOWLEDGED") return "Acknowledged";
+    if (incident.status === "ALERT_UNACKNOWLEDGED") return "Unacknowledged";
+    return incident.status || "--";
+  }
   async function loadAlertState(){
-    const { data } = await sb.from("alert_state").select("*").eq("id",1).single();
-    if (!data) return;
-
-    const active = !!data.current_alert_started;
-    const ack = !!data.is_acknowledged;
-
+    requireDevice();
+    const { data, error } = await sb.from("alert_incidents")
+      .select("id,status,opened_at,acknowledged_at,recovered_at,condition_details,failing_count,recovering_count")
+      .eq("device_id", currentDevice.id)
+      .in("status", ["ALERT_UNACKNOWLEDGED","ALERT_ACKNOWLEDGED"])
+      .order("opened_at", { ascending:false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    activeIncident=data || null;
+    const active=!!activeIncident;
+    const ack=activeIncident?.status === "ALERT_ACKNOWLEDGED";
     $("alertBanner").classList.toggle("show", active);
-
+    $("alertText").textContent = active ? JSON.stringify(activeIncident.condition_details || {}) : "Out of range";
     $("ackState").textContent = ack ? "Acknowledged" : "Not acknowledged";
     $("ackState").classList.toggle("ok", ack);
     $("ackState").classList.toggle("bad", !ack);
-
-    $("btnAck").disabled = ack || !active;
+    $("incidentState").textContent = incidentText(activeIncident);
+    $("btnAck").disabled = !active || ack;
   }
-
   async function ack(){
-    const now = new Date().toISOString();
-    const { error } = await sb.from("alert_state").update({ is_acknowledged:true, acknowledged_at:now }).eq("id",1);
-    if (error) toast("Ack failed: " + error.message);
-    else toast("Acknowledged");
+    if (!activeIncident) return;
+    const { data, error } = await sb.functions.invoke("acknowledge-incident", { body:{ incident_id: activeIncident.id } });
+    if (error || data?.error) {
+      toast("Ack failed: " + (error?.message || data.error));
+      return;
+    }
+    toast("Acknowledged");
     await loadAlertState();
   }
-
   function getStart(period){
     const now = new Date();
     if (period==="week")  return new Date(now.getTime() - 7*24*3600*1000);
     if (period==="month") return new Date(now.getTime() - 30*24*3600*1000);
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }
-
   function initChart(){
     const ctx = $("chart").getContext("2d");
     chart = new Chart(ctx, {
       type:"line",
       data:{ datasets:[
-        { label:"Ambient (°C)", data:[], borderWidth:2, pointRadius:0, tension:.25 },
-        { label:"Fridge (°C)", data:[], borderWidth:2, pointRadius:0, tension:.25 }
+        { label:"Ambient (C)", data:[], borderWidth:2, pointRadius:0, tension:.25 },
+        { label:"Fridge (C)", data:[], borderWidth:2, pointRadius:0, tension:.25 }
       ]},
       options:{
         responsive:true,
@@ -329,108 +491,108 @@
       }
     });
   }
-
   async function loadSeries(){
+    requireDevice();
     const start = getStart(period).toISOString();
-
     const { data, error } = await sb.from("temperature_readings")
-      .select("timestamp,ambient_temp,freezer_temp")
-      .gte("timestamp", start)
-      .order("timestamp", { ascending:true });
-
-    if (error) { toast("Chart load failed"); return; }
-    if (!data || data.length===0) return;
-
-    let pts = data;
+      .select("received_at,captured_at,ambient_temp,fridge_temp")
+      .eq("device_id", currentDevice.id)
+      .gte("received_at", start)
+      .order("received_at", { ascending:true });
+    if (error) throw error;
+    if (!data || data.length===0) {
+      $("avgAmbient").innerHTML="--.- &deg;C";
+      $("avgFridge").innerHTML="--.- &deg;C";
+      chart.data.datasets[0].data=[];
+      chart.data.datasets[1].data=[];
+      chart.update();
+      return;
+    }
+    let pts=data;
     if (pts.length > 600) {
       const step = Math.ceil(pts.length / 600);
       pts = pts.filter((_,i)=> i%step===0);
     }
-
-    const amb = [];
-    const frg = [];
-    let sumA=0, sumF=0;
-
+    const amb=[], frg=[];
+    let sumA=0, sumF=0, countA=0, countF=0;
     for (const r of pts){
-      const t = new Date(r.timestamp).getTime();
-      const a = parseFloat(r.ambient_temp);
-      const f = parseFloat(r.freezer_temp);
-      amb.push({ x:t, y:a });
-      frg.push({ x:t, y:f });
-      sumA += a; sumF += f;
+      const t = new Date(readingTime(r)).getTime();
+      const a = Number(r.ambient_temp);
+      const f = Number(r.fridge_temp);
+      if (Number.isFinite(a)) { amb.push({ x:t, y:a }); sumA+=a; countA++; }
+      if (Number.isFinite(f)) { frg.push({ x:t, y:f }); sumF+=f; countF++; }
     }
-
-    $("avgAmbient").textContent = (sumA/pts.length).toFixed(1) + " °C";
-    $("avgFridge").textContent  = (sumF/pts.length).toFixed(1) + " °C";
-
+    $("avgAmbient").innerHTML = countA ? cText(sumA/countA) : "--.- &deg;C";
+    $("avgFridge").innerHTML  = countF ? cText(sumF/countF) : "--.- &deg;C";
     chart.data.datasets[0].data = amb;
     chart.data.datasets[1].data = frg;
     chart.update();
   }
-
   async function loadTable(){
-    const { data } = await sb.from("temperature_readings")
-      .select("*").order("timestamp",{ ascending:false }).limit(20);
-
-    if (!data || data.length===0) return;
-
+    requireDevice();
+    const { data, error } = await sb.from("temperature_readings")
+      .select("received_at,captured_at,ambient_temp,fridge_temp,ambient_valid,fridge_valid,wifi_rssi")
+      .eq("device_id", currentDevice.id)
+      .order("received_at",{ ascending:false })
+      .limit(20);
+    if (error) throw error;
+    if (!data || data.length===0) {
+      $("pillRows").textContent = "0 rows";
+      $("tbody").innerHTML='<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">No readings</td></tr>';
+      return;
+    }
     $("pillRows").textContent = data.length + " rows";
     $("tbody").innerHTML = data.map(r=>{
-      const a=parseFloat(r.ambient_temp), f=parseFloat(r.freezer_temp);
-      const bad = (r.ambient_alert || r.freezer_alert || isBadAmbient(a) || isBadFridge(f));
+      const a=Number(r.ambient_temp), f=Number(r.fridge_temp);
+      const bad = (!r.ambient_valid || !r.fridge_valid || isBadAmbient(a) || isBadFridge(f));
       return `<tr>
-        <td>${new Date(r.timestamp).toLocaleString()}</td>
-        <td>${a.toFixed(1)}</td>
-        <td>${f.toFixed(1)}</td>
+        <td>${new Date(readingTime(r)).toLocaleString()}</td>
+        <td>${fmt(a)}</td>
+        <td>${fmt(f)}</td>
         <td>${r.wifi_rssi ?? "--"}</td>
         <td class="${bad ? "statusBad":"statusOk"}">${bad ? "ALERT":"OK"}</td>
       </tr>`;
     }).join("");
   }
-
   function csvEscape(v){
     const s=String(v ?? "");
     return (s.includes(",")||s.includes('"')||s.includes("\n")) ? `"${s.replace(/"/g,'""')}"` : s;
   }
-
   async function exportCSVYears(years=5){
+    requireDevice();
     toast("Export started");
     const now = new Date();
     const start = new Date(now); start.setFullYear(now.getFullYear()-years);
-
     const pageSize=5000;
     let from=0;
-    let csv="timestamp,ambient_temp,freezer_temp,ambient_alert,freezer_alert,wifi_rssi\n";
+    let csv="received_at,captured_at,ambient_temp,fridge_temp,ambient_valid,fridge_valid,wifi_rssi\n";
     let total=0;
-
     while(true){
       const to = from + pageSize - 1;
       const { data, error } = await sb.from("temperature_readings")
-        .select("timestamp,ambient_temp,freezer_temp,ambient_alert,freezer_alert,wifi_rssi")
-        .gte("timestamp", start.toISOString())
-        .lte("timestamp", now.toISOString())
-        .order("timestamp",{ ascending:true })
+        .select("received_at,captured_at,ambient_temp,fridge_temp,ambient_valid,fridge_valid,wifi_rssi")
+        .eq("device_id", currentDevice.id)
+        .gte("received_at", start.toISOString())
+        .lte("received_at", now.toISOString())
+        .order("received_at",{ ascending:true })
         .range(from,to);
-
-      if (error){ toast("Export failed"); return; }
+      if (error){ toast("Export failed: " + error.message); return; }
       if (!data || data.length===0) break;
-
       for (const r of data){
         csv += [
-          csvEscape(r.timestamp),
+          csvEscape(r.received_at),
+          csvEscape(r.captured_at),
           csvEscape(r.ambient_temp),
-          csvEscape(r.freezer_temp),
-          csvEscape(r.ambient_alert ? "YES":"NO"),
-          csvEscape(r.freezer_alert ? "YES":"NO"),
+          csvEscape(r.fridge_temp),
+          csvEscape(r.ambient_valid ? "YES":"NO"),
+          csvEscape(r.fridge_valid ? "YES":"NO"),
           csvEscape(r.wifi_rssi)
         ].join(",") + "\n";
       }
-
       total += data.length;
       from += pageSize;
       if (data.length < pageSize) break;
     }
-
     const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
@@ -442,44 +604,116 @@
     URL.revokeObjectURL(url);
     toast("Export complete: " + total + " rows");
   }
-
-  async function refreshAll(){
+  function numberInput(id){
+    const n = Number($(id).value);
+    if (!Number.isFinite(n)) throw new Error("Invalid setting: " + id);
+    return n;
+  }
+  async function saveSettings(){
+    requireDevice();
+    const patch = {
+      ambient_min: numberInput("ambientMin"),
+      ambient_max: numberInput("ambientMax"),
+      fridge_min: numberInput("fridgeMin"),
+      fridge_max: numberInput("fridgeMax"),
+      alert_after_consecutive_failures: Math.max(1, Math.trunc(numberInput("alertAfter"))),
+      recover_after_consecutive_normal: Math.max(1, Math.trunc(numberInput("recoverAfter"))),
+      offline_after_minutes: Math.max(1, Math.trunc(numberInput("offlineAfter"))),
+      email_enabled: $("emailEnabled").checked,
+      push_enabled: $("pushEnabled").checked,
+      updated_at: new Date().toISOString(),
+    };
+    if (patch.ambient_min >= patch.ambient_max || patch.fridge_min >= patch.fridge_max) {
+      toast("Settings ranges are invalid");
+      return;
+    }
+    const { data, error } = await sb.from("device_configuration")
+      .update(patch)
+      .eq("device_id", currentDevice.id)
+      .select("*")
+      .single();
+    if (error) {
+      toast("Settings save failed: " + error.message);
+      return;
+    }
+    currentConfig={...DEFAULT_CONFIG, ...data};
+    updateConfigUI();
+    await refreshReadingsOnly();
+    toast("Settings saved");
+  }
+  async function refreshReadingsOnly(){
     await loadCounts();
     await loadLatest();
-    await loadAlertState();
     await loadSeries();
     await loadTable();
   }
-
+  async function refreshAll(){
+    if (!currentUser) return;
+    try {
+      await loadDevice();
+      await refreshReadingsOnly();
+      await loadAlertState();
+      subscribeRealtime();
+    } catch (err) {
+      toast(err.message || "Refresh failed");
+    }
+  }
+  function subscribeRealtime(){
+    if (!currentDevice) return;
+    if (readingsChannel) sb.removeChannel(readingsChannel);
+    if (incidentsChannel) sb.removeChannel(incidentsChannel);
+    readingsChannel = sb.channel("v2-readings-" + currentDevice.id)
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"temperature_readings",filter:`device_id=eq.${currentDevice.id}`}, async ()=>{
+        await refreshReadingsOnly();
+      })
+      .subscribe();
+    incidentsChannel = sb.channel("v2-incidents-" + currentDevice.id)
+      .on("postgres_changes",{event:"*",schema:"public",table:"alert_incidents",filter:`device_id=eq.${currentDevice.id}`}, async ()=>{
+        await loadAlertState();
+      })
+      .subscribe();
+  }
+  $("btnSignIn").addEventListener("click", signIn);
+  $("password").addEventListener("keydown", (e)=>{ if(e.key==="Enter") signIn(); });
+  $("btnSignOut").addEventListener("click", signOut);
   $("btnAck").addEventListener("click", ack);
   $("btnRefresh").addEventListener("click", ()=>{ toast("Refreshing"); refreshAll(); });
-  $("btnCsv").addEventListener("click", ()=> exportCSVYears(5));
-
+  $("btnCsv").addEventListener("click", ()=> exportCSVYears(5).catch(err=>toast(err.message)));
+  $("btnSaveSettings").addEventListener("click", ()=> saveSettings().catch(err=>toast(err.message)));
   $("tabs").addEventListener("click", (e)=>{
     const b = e.target.closest("button");
     if (!b) return;
     document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));
     b.classList.add("active");
     period = b.dataset.p;
-    loadSeries();
+    loadSeries().catch(err=>toast(err.message));
   });
-
+  navigator.serviceWorker?.addEventListener("message", (event)=>{
+    if (event.data?.action === "acknowledge") ack();
+  });
+  sb.auth.onAuthStateChange((_event, session)=>{
+    currentUser = session?.user ?? null;
+    setSignedInUI(!!currentUser);
+    if (currentUser) refreshAll();
+    else resetDashboard();
+  });
   (async ()=>{
     initChart();
-    await refreshAll();
-
-    sb.channel("readings")
-      .on("postgres_changes",{event:"INSERT",schema:"public",table:"temperature_readings"}, async ()=>{
-        await loadLatest();
-        if (period==="today") await loadSeries();
-        await loadTable();
-        updateStaleBanner();
-      })
-      .subscribe();
-
-    setInterval(loadAlertState, 5000);
-    setInterval(updateStaleBanner, 1000);
+    updateConfigUI();
+    resetDashboard();
+    const { data } = await sb.auth.getSession();
+    currentUser = data.session?.user ?? null;
+    setSignedInUI(!!currentUser);
+    if (currentUser) await refreshAll();
+    if (new URLSearchParams(location.search).get("acknowledge") === "true") {
+      setTimeout(()=>ack(), 1000);
+    }
+    setInterval(()=> {
+      updateStaleBanner();
+      if (currentUser) loadAlertState().catch(()=>{});
+    }, 5000);
   })();
 </script>
 </body>
 </html>
+
