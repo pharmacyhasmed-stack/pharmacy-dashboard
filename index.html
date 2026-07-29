@@ -388,8 +388,9 @@
   async function loadCounts(){
     requireDevice();
     const { count, error } = await sb.from("temperature_readings")
-      .select("*", { count:"exact", head:true })
-      .eq("device_id", currentDevice.id);
+      .select("id", { count:"exact" })
+      .eq("device_id", currentDevice.id)
+      .limit(1);
     if (error) throw error;
     $("totalCount").textContent = count ?? "--";
   }
