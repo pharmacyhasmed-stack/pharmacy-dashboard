@@ -372,7 +372,7 @@
   }
   async function loadDevice(){
     const { data, error } = await sb.from("devices")
-      .select("id,device_uid,name,location,active,firmware_version,last_seen_at,last_sequence_number,device_configuration(*)")
+      .select("id,device_uid,name,location,active,firmware_version,last_seen_at,last_sequence_number,device_configuration(ambient_min,ambient_max,fridge_min,fridge_max,alert_after_consecutive_failures,recover_after_consecutive_normal,offline_after_minutes,email_enabled,push_enabled)")
       .eq("active", true)
       .order("created_at", { ascending:true })
       .limit(1)

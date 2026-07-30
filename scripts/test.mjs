@@ -20,6 +20,10 @@ mustInclude('from("alert_incidents")', "V2 incidents query");
 mustInclude('functions.invoke("acknowledge-incident"', "acknowledgement Edge Function");
 mustInclude('from("device_configuration")', "settings persistence");
 
+mustNotInclude("device_configuration(*)", "wildcard configuration exposure");
+mustNotInclude("storage_transform_mode", "internal transform mode exposure");
+mustNotInclude("above_maximum_jitter_celsius", "internal transform jitter exposure");
+mustNotInclude("ntfy_enabled", "internal ntfy flag exposure");
 mustNotInclude("alert_state", "legacy alert_state table");
 mustNotInclude("freezer_temp", "legacy freezer_temp column");
 mustNotInclude("ambient_alert", "legacy ambient_alert column");
