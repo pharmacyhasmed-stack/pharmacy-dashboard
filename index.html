@@ -72,6 +72,7 @@
     button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
     button.primary:hover{background:#0f5b7d;color:#fff}
     button:disabled{opacity:.5;cursor:not-allowed}
+    button.toggle[aria-pressed="true"]{background:#e8f7f2;border-color:#81c7ad;color:var(--ok)}
 
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
     .card{
@@ -172,6 +173,8 @@
     .hide{display:none!important}
     #authCard{margin-bottom:12px}
     #authCard .kpiTitle{margin-bottom:14px}
+    .settingsWidget{grid-column:span 12}
+    .settingsWidget .formGrid{align-items:end}
     #cardAmbient,#cardFridge{position:relative;overflow:hidden}
     #cardAmbient:before,#cardFridge:before{
       content:"";
@@ -205,7 +208,7 @@
         </div>
       </div>
       <div class="actions">
-        <button id="btnAck" class="primary">Acknowledge</button>
+        <button id="btnAck" class="primary toggle" type="button" aria-pressed="false">Acknowledge alert</button>
         <button id="btnRefresh">Refresh</button>
         <button id="btnCsv">Export CSV (5 years)</button>
         <button id="btnSignOut" class="hide">Sign out</button>
@@ -280,8 +283,8 @@
         <div class="row"><span>Records (total)</span><span id="totalCount">--</span></div>
       </div>
 
-      <div class="card c8">
-        <div class="kpiTitle"><div class="lbl">Settings</div><div class="pill" id="settingsState">Read only until loaded</div></div>
+      <div class="card settingsWidget">
+        <div class="kpiTitle"><div class="lbl">Device settings</div><div class="pill" id="settingsState">Read only until loaded</div></div>
         <div class="formGrid">
           <div class="field third"><label for="ambientMin">Ambient min</label><input id="ambientMin" type="number" step="0.1" /></div>
           <div class="field third"><label for="ambientMax">Ambient max</label><input id="ambientMax" type="number" step="0.1" /></div>
@@ -295,7 +298,7 @@
         </div>
         <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
           <button id="btnSaveSettings" class="primary">Save settings</button>
-          <span class="muted" id="settingsHelp">Settings update requires an admin account.</span>
+          <span class="muted" id="settingsHelp">Changes apply to this assigned device.</span>
         </div>
       </div>
 
@@ -386,7 +389,7 @@
   function setSignedInUI(signedIn){
     $("authCard").classList.toggle("hide", signedIn);
     $("btnSignOut").classList.toggle("hide", !signedIn);
-    $("btnAck").disabled = !signedIn || !activeIncident || activeIncident.status === "ALERT_ACKNOWLEDGED";
+    updateAckButton(!!activeIncident, activeIncident?.status === "ALERT_ACKNOWLEDGED");
     $("btnRefresh").disabled = !signedIn;
     $("btnCsv").disabled = !signedIn;
     $("btnSaveSettings").disabled = !signedIn || !currentDevice;
@@ -538,6 +541,32 @@
     if (incident.status === "ALERT_UNACKNOWLEDGED") return "Unacknowledged";
     return incident.status || "--";
   }
+  function conditionLabel(key){
+    if (key === "ambient_temperature") return "Ambient temperature";
+    if (key === "fridge_temperature") return "Fridge temperature";
+    if (key === "ambient_sensor") return "Ambient sensor";
+    if (key === "fridge_sensor") return "Fridge sensor";
+    return key.replace(/_/g, " ");
+  }
+  function directionText(condition){
+    const direction = condition?.direction || "";
+    if (direction === "above_maximum") return `above maximum ${cText(Number(condition.max))}`;
+    if (direction === "below_minimum") return `below minimum ${cText(Number(condition.min))}`;
+    if (direction === "sensor_fault") return "sensor fault";
+    return direction.replace(/_/g, " ") || "out of range";
+  }
+  function alertDescription(details){
+    const entries = Object.entries(details || {});
+    if (!entries.length) return "One or more readings are outside the configured range.";
+    return entries.map(([key, condition]) => `${conditionLabel(key)} is ${directionText(condition)}`).join(". ");
+  }
+  function updateAckButton(active, ack){
+    const btn = $("btnAck");
+    btn.disabled = !currentUser || !active || ackInFlight;
+    btn.setAttribute("aria-pressed", ack ? "true" : "false");
+    btn.textContent = ack ? "Acknowledged" : "Acknowledge alert";
+    btn.classList.toggle("primary", !ack);
+  }
   async function loadAlertState(){
     requireDevice();
     if (alertRefreshInFlight) return;
@@ -555,18 +584,23 @@
     const active=!!activeIncident;
     const ack=activeIncident?.status === "ALERT_ACKNOWLEDGED";
     $("alertBanner").classList.toggle("show", active);
-    $("alertText").textContent = active ? JSON.stringify(activeIncident.condition_details || {}) : "Out of range";
+    $("alertText").textContent = active ? alertDescription(activeIncident.condition_details) : "Out of range";
     $("ackState").textContent = ack ? "Acknowledged" : "Not acknowledged";
     $("ackState").classList.toggle("ok", ack);
     $("ackState").classList.toggle("bad", !ack);
     $("incidentState").textContent = incidentText(activeIncident);
-    $("btnAck").disabled = !active || ack;
+    updateAckButton(active, ack);
     } finally {
       alertRefreshInFlight=false;
     }
   }
   async function ack(){
     if (!activeIncident || ackInFlight) return;
+    if (activeIncident.status === "ALERT_ACKNOWLEDGED") {
+      toast("Alert is already acknowledged");
+      updateAckButton(true, true);
+      return;
+    }
     ackInFlight=true;
     $("btnAck").disabled=true;
     try {
