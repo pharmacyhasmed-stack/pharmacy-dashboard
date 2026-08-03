@@ -257,6 +257,10 @@
   let readingsChannel=null;
   let incidentsChannel=null;
   let lastReadingTsMs=null;
+  let refreshAllInFlight=false;
+  let readingsRefreshInFlight=false;
+  let alertRefreshInFlight=false;
+  let ackInFlight=false;
 
   function fmt(n){ return Number.isFinite(n) ? n.toFixed(1) : "--.-"; }
   function cText(n){ return fmt(Number(n)) + " \u00b0C"; }
@@ -365,6 +369,7 @@
     toast("Signed in");
   }
   async function signOut(){
+    clearSubscriptions();
     await sb.auth.signOut();
     currentUser=null;
     resetDashboard();
@@ -434,6 +439,9 @@
   }
   async function loadAlertState(){
     requireDevice();
+    if (alertRefreshInFlight) return;
+    alertRefreshInFlight=true;
+    try {
     const { data, error } = await sb.from("alert_incidents")
       .select("id,status,opened_at,acknowledged_at,recovered_at,condition_details,failing_count,recovering_count")
       .eq("device_id", currentDevice.id)
@@ -452,9 +460,15 @@
     $("ackState").classList.toggle("bad", !ack);
     $("incidentState").textContent = incidentText(activeIncident);
     $("btnAck").disabled = !active || ack;
+    } finally {
+      alertRefreshInFlight=false;
+    }
   }
   async function ack(){
-    if (!activeIncident) return;
+    if (!activeIncident || ackInFlight) return;
+    ackInFlight=true;
+    $("btnAck").disabled=true;
+    try {
     const { data, error } = await sb.functions.invoke("acknowledge-incident", { body:{ incident_id: activeIncident.id } });
     if (error || data?.error) {
       toast("Ack failed: " + (error?.message || data.error));
@@ -462,6 +476,10 @@
     }
     toast("Acknowledged");
     await loadAlertState();
+    } finally {
+      ackInFlight=false;
+      setSignedInUI(!!currentUser);
+    }
   }
   function getStart(period){
     const now = new Date();
@@ -643,13 +661,20 @@
     toast("Settings saved");
   }
   async function refreshReadingsOnly(){
+    if (readingsRefreshInFlight) return;
+    readingsRefreshInFlight=true;
+    try {
     await loadCounts();
     await loadLatest();
     await loadSeries();
     await loadTable();
+    } finally {
+      readingsRefreshInFlight=false;
+    }
   }
   async function refreshAll(){
-    if (!currentUser) return;
+    if (!currentUser || refreshAllInFlight) return;
+    refreshAllInFlight=true;
     try {
       await loadDevice();
       await refreshReadingsOnly();
@@ -657,12 +682,23 @@
       subscribeRealtime();
     } catch (err) {
       toast(err.message || "Refresh failed");
+    } finally {
+      refreshAllInFlight=false;
+    }
+  }
+  function clearSubscriptions(){
+    if (readingsChannel) {
+      sb.removeChannel(readingsChannel);
+      readingsChannel=null;
+    }
+    if (incidentsChannel) {
+      sb.removeChannel(incidentsChannel);
+      incidentsChannel=null;
     }
   }
   function subscribeRealtime(){
     if (!currentDevice) return;
-    if (readingsChannel) sb.removeChannel(readingsChannel);
-    if (incidentsChannel) sb.removeChannel(incidentsChannel);
+    clearSubscriptions();
     readingsChannel = sb.channel("v2-readings-" + currentDevice.id)
       .on("postgres_changes",{event:"INSERT",schema:"public",table:"temperature_readings",filter:`device_id=eq.${currentDevice.id}`}, async ()=>{
         await refreshReadingsOnly();
@@ -696,7 +732,10 @@
     currentUser = session?.user ?? null;
     setSignedInUI(!!currentUser);
     if (currentUser) refreshAll();
-    else resetDashboard();
+    else {
+      clearSubscriptions();
+      resetDashboard();
+    }
   });
   (async ()=>{
     initChart();
@@ -712,7 +751,7 @@
     setInterval(()=> {
       updateStaleBanner();
       if (currentUser) loadAlertState().catch(()=>{});
-    }, 5000);
+    }, 60000);
   })();
 </script>
 </body>
