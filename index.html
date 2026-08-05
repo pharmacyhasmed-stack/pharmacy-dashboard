@@ -213,7 +213,7 @@
         </div>
       </div>
       <div class="actions">
-        <button id="btnAck" class="primary toggle" type="button" aria-pressed="false">Acknowledge alert</button>
+        <button id="btnAck" class="primary toggle" type="button" aria-pressed="false">Acknowledge / mute notifications</button>
         <button id="btnRefresh">Refresh</button>
         <button id="btnCsv">Export CSV (5 years)</button>
         <button id="btnSignOut" class="hide">Sign out</button>
@@ -599,7 +599,7 @@
     const btn = $("btnAck");
     btn.disabled = !currentUser || !active || ackInFlight;
     btn.setAttribute("aria-pressed", ack ? "true" : "false");
-    btn.textContent = ack ? "Acknowledged" : "Acknowledge alert";
+    btn.textContent = ack ? "Re-enable notifications" : "Acknowledge / mute notifications";
     btn.classList.toggle("primary", !ack);
   }
   async function loadAlertState(){
@@ -632,9 +632,7 @@
   async function ack(){
     if (!activeIncident || ackInFlight) return;
     if (activeIncident.status === "ALERT_ACKNOWLEDGED") {
-      toast("Alert is already acknowledged");
-      updateAckButton(true, true);
-      return;
+      toast("Re-enabling notifications");
     }
     ackInFlight=true;
     $("btnAck").disabled=true;
@@ -644,7 +642,7 @@
       toast("Ack failed: " + (error?.message || data.error));
       return;
     }
-    toast("Acknowledged");
+    toast(activeIncident.status === "ALERT_ACKNOWLEDGED" ? "Notifications re-enabled" : "Alert acknowledged; notifications muted");
     await loadAlertState();
     } finally {
       ackInFlight=false;
