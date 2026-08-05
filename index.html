@@ -120,6 +120,11 @@
     .tabs{display:flex;gap:6px}
     .tabs button{padding:8px 10px;min-height:34px;background:var(--surface-2)}
     .tabs button.active{background:#e4f2f6;border-color:#93c9dc;color:var(--accent)}
+    .sectionTabs{display:flex;gap:6px;margin:0 0 12px}
+    .sectionTabs button{background:var(--surface-2)}
+    .sectionTabs button.active{background:#e4f2f6;border-color:#93c9dc;color:var(--accent)}
+    .view{display:none}
+    .view.active{display:block}
     .canvasWrap{height:330px}
     @media(max-width:520px){ .canvasWrap{height:260px} }
 
@@ -229,6 +234,7 @@
       </div>
       <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
         <button id="btnSignIn" class="primary">Sign in</button>
+        <button id="btnSignUp">Create account</button>
         <span class="muted" id="authHelp">Use the authorized dashboard account.</span>
       </div>
     </div>
@@ -252,6 +258,12 @@
       <div class="pill bad" id="staleAge">--</div>
     </div>
 
+    <div class="sectionTabs" id="sectionTabs">
+      <button data-view="overview" class="active" type="button">Overview</button>
+      <button data-view="settings" type="button">Settings</button>
+    </div>
+
+    <section id="viewOverview" class="view active">
     <div class="grid">
       <div class="card c6" id="cardAmbient">
         <div class="kpiTitle">
@@ -283,25 +295,6 @@
         <div class="row"><span>Records (total)</span><span id="totalCount">--</span></div>
       </div>
 
-      <div class="card settingsWidget">
-        <div class="kpiTitle"><div class="lbl">Device settings</div><div class="pill" id="settingsState">Read only until loaded</div></div>
-        <div class="formGrid">
-          <div class="field third"><label for="ambientMin">Ambient min</label><input id="ambientMin" type="number" step="0.1" /></div>
-          <div class="field third"><label for="ambientMax">Ambient max</label><input id="ambientMax" type="number" step="0.1" /></div>
-          <div class="field third"><label for="offlineAfter">Offline minutes</label><input id="offlineAfter" type="number" step="1" min="1" /></div>
-          <div class="field third"><label for="fridgeMin">Fridge min</label><input id="fridgeMin" type="number" step="0.1" /></div>
-          <div class="field third"><label for="fridgeMax">Fridge max</label><input id="fridgeMax" type="number" step="0.1" /></div>
-          <div class="field third"><label for="alertAfter">Confirm count</label><input id="alertAfter" type="number" step="1" min="1" /></div>
-          <div class="field third"><label for="recoverAfter">Recovery count</label><input id="recoverAfter" type="number" step="1" min="1" /></div>
-          <div class="field third"><label for="emailEnabled">Email enabled</label><input id="emailEnabled" type="checkbox" /></div>
-          <div class="field third"><label for="pushEnabled">Push enabled</label><input id="pushEnabled" type="checkbox" /></div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
-          <button id="btnSaveSettings" class="primary">Save settings</button>
-          <span class="muted" id="settingsHelp">Changes apply to this assigned device.</span>
-        </div>
-      </div>
-
       <div class="card c8">
         <div class="chartHead">
           <div class="lbl" style="font-weight:900;letter-spacing:.02em">History</div>
@@ -324,6 +317,29 @@
         </div>
       </div>
     </div>
+    </section>
+
+    <section id="viewSettings" class="view">
+      <div class="card settingsWidget">
+        <div class="kpiTitle"><div class="lbl">Device settings</div><div class="pill" id="settingsState">Read only until loaded</div></div>
+        <div class="formGrid">
+          <div class="field third"><label for="ambientMin">Ambient min</label><input id="ambientMin" type="number" step="0.1" /></div>
+          <div class="field third"><label for="ambientMax">Ambient max</label><input id="ambientMax" type="number" step="0.1" /></div>
+          <div class="field third"><label for="offlineAfter">Offline minutes</label><input id="offlineAfter" type="number" step="1" min="1" /></div>
+          <div class="field third"><label for="fridgeMin">Fridge min</label><input id="fridgeMin" type="number" step="0.1" /></div>
+          <div class="field third"><label for="fridgeMax">Fridge max</label><input id="fridgeMax" type="number" step="0.1" /></div>
+          <div class="field third"><label for="alertAfter">Confirm count</label><input id="alertAfter" type="number" step="1" min="1" /></div>
+          <div class="field third"><label for="recoverAfter">Recovery count</label><input id="recoverAfter" type="number" step="1" min="1" /></div>
+          <div class="field third"><label>ntfy notifications</label><span class="pill ok">Enabled automatically</span></div>
+          <div class="field third"><label for="emailEnabled">Email enabled</label><input id="emailEnabled" type="checkbox" /></div>
+          <div class="field third"><label for="pushEnabled">Push enabled</label><input id="pushEnabled" type="checkbox" /></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
+          <button id="btnSaveSettings" class="primary">Save settings</button>
+          <span class="muted" id="settingsHelp">Changes apply to this assigned device. ntfy alerts are enabled automatically.</span>
+        </div>
+      </div>
+    </section>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -471,6 +487,25 @@
     }
     $("password").value="";
     toast("Signed in");
+  }
+  async function signUp(){
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    if (!email || !password) {
+      toast("Email and password are required");
+      return;
+    }
+    if (password.length < 8) {
+      toast("Use a password with at least 8 characters");
+      return;
+    }
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) {
+      toast("Account creation failed: " + error.message);
+      return;
+    }
+    if (data.session) toast("Account created. A device must be assigned before readings appear.");
+    else toast("Account created. Check your email, then ask an administrator to assign the device.");
   }
   async function signOut(){
     clearSubscriptions();
@@ -846,6 +881,7 @@
       .subscribe();
   }
   $("btnSignIn").addEventListener("click", signIn);
+  $("btnSignUp").addEventListener("click", ()=> signUp().catch(err=>toast(err.message)));
   $("password").addEventListener("keydown", (e)=>{ if(e.key==="Enter") signIn(); });
   $("btnSignOut").addEventListener("click", signOut);
   $("btnAck").addEventListener("click", ack);
@@ -859,6 +895,15 @@
     b.classList.add("active");
     period = b.dataset.p;
     loadSeries().catch(err=>toast(err.message));
+  });
+  $("sectionTabs").addEventListener("click", (e)=>{
+    const b=e.target.closest("button");
+    if (!b) return;
+    document.querySelectorAll("#sectionTabs button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    const settings=b.dataset.view === "settings";
+    $("viewOverview").classList.toggle("active", !settings);
+    $("viewSettings").classList.toggle("active", settings);
   });
   navigator.serviceWorker?.addEventListener("message", (event)=>{
     if (event.data?.action === "acknowledge") ack();
