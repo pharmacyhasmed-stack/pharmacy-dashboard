@@ -357,6 +357,7 @@
     offline_after_minutes: 15,
     email_enabled: false,
     push_enabled: false,
+    dashboard_alerts_enabled: true,
   };
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -516,7 +517,7 @@
   }
   async function loadDevice(){
     const { data, error } = await sb.from("devices")
-      .select("id,device_uid,name,location,active,firmware_version,last_seen_at,last_sequence_number,device_configuration(ambient_min,ambient_max,fridge_min,fridge_max,alert_after_consecutive_failures,recover_after_consecutive_normal,offline_after_minutes,email_enabled,push_enabled)")
+      .select("id,device_uid,name,location,active,firmware_version,last_seen_at,last_sequence_number,device_configuration(ambient_min,ambient_max,fridge_min,fridge_max,alert_after_consecutive_failures,recover_after_consecutive_normal,offline_after_minutes,email_enabled,push_enabled,dashboard_alerts_enabled)")
       .eq("active", true)
       .order("created_at", { ascending:true })
       .limit(1)
@@ -618,12 +619,13 @@
     activeIncident=data || null;
     const active=!!activeIncident;
     const ack=activeIncident?.status === "ALERT_ACKNOWLEDGED";
-    $("alertBanner").classList.toggle("show", active);
+    const dashboardAlertsEnabled = currentConfig.dashboard_alerts_enabled !== false;
+    $("alertBanner").classList.toggle("show", active && dashboardAlertsEnabled);
     $("alertText").textContent = active ? alertDescription(activeIncident.condition_details) : "Out of range";
     $("ackState").textContent = ack ? "Acknowledged" : "Not acknowledged";
     $("ackState").classList.toggle("ok", ack);
     $("ackState").classList.toggle("bad", !ack);
-    $("incidentState").textContent = incidentText(activeIncident);
+    $("incidentState").textContent = dashboardAlertsEnabled ? incidentText(activeIncident) : (active ? (ack ? "Notifications muted" : "Notifications active") : "None open");
     updateAckButton(active, ack);
     } finally {
       alertRefreshInFlight=false;
