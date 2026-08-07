@@ -453,6 +453,11 @@
   function updateStaleBanner(){
     const el = $("staleBanner");
     const ageEl = $("staleAge");
+    if (activeIncident?.status === "ALERT_ACKNOWLEDGED") {
+      el.classList.remove("show");
+      ageEl.textContent = "";
+      return;
+    }
     const offlineMs = Math.max(1, Number(currentConfig.offline_after_minutes || 15)) * 60000;
     const basis = currentDevice?.last_seen_at ? new Date(currentDevice.last_seen_at).getTime() : lastReadingTsMs;
     if (!basis) {
@@ -627,6 +632,7 @@
     $("ackState").classList.toggle("bad", !ack);
     $("incidentState").textContent = dashboardAlertsEnabled ? incidentText(activeIncident) : (active ? (ack ? "Notifications muted" : "Notifications active") : "None open");
     updateAckButton(active, ack);
+    updateStaleBanner();
     } finally {
       alertRefreshInFlight=false;
     }
