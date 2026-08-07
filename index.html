@@ -339,6 +339,17 @@
           <span class="muted" id="settingsHelp">Changes apply to this assigned device. ntfy alerts are enabled automatically.</span>
         </div>
       </div>
+      <div class="card settingsWidget hide" id="firmwareWidget">
+        <div class="kpiTitle"><div class="lbl">Firmware update</div><div class="pill">Administrator only</div></div>
+        <div class="formGrid">
+          <div class="field third"><label for="firmwareVersion">Version</label><input id="firmwareVersion" type="text" placeholder="2.0.1" inputmode="numeric" /></div>
+          <div class="field third"><label for="firmwareFile">Firmware binary</label><input id="firmwareFile" type="file" accept=".bin,application/octet-stream" /></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
+          <button id="btnUploadFirmware" class="primary">Publish firmware</button>
+          <span class="muted" id="firmwareStatus">Updates are delivered to this device over HTTPS on its next check.</span>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -382,6 +393,7 @@
   let readingsRefreshInFlight=false;
   let alertRefreshInFlight=false;
   let ackInFlight=false;
+  let currentRole="viewer";
 
   function fmt(n){ return Number.isFinite(n) ? n.toFixed(1) : "--.-"; }
   function cText(n){ return fmt(Number(n)) + " \u00b0C"; }
@@ -410,11 +422,13 @@
     $("btnRefresh").disabled = !signedIn;
     $("btnCsv").disabled = !signedIn;
     $("btnSaveSettings").disabled = !signedIn || !currentDevice;
+    $("firmwareWidget").classList.toggle("hide", !(signedIn && ["owner","admin"].includes(currentRole)));
     $("authState").textContent = signedIn ? "Signed in" : "Signed out";
     $("authState").classList.toggle("ok", signedIn);
   }
   function resetDashboard(){
     currentDevice=null;
+    currentRole="viewer";
     activeIncident=null;
     lastReadingTsMs=null;
     $("deviceName").textContent="--";
@@ -429,6 +443,9 @@
     $("tbody").innerHTML='<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Sign in to load readings</td></tr>';
     $("alertBanner").classList.remove("show");
     $("staleBanner").classList.remove("show");
+    $("firmwareWidget").classList.add("hide");
+    $("firmwareFile").value="";
+    $("firmwareStatus").textContent="Updates are delivered to this device over HTTPS on its next check.";
     if (chart) {
       chart.data.datasets[0].data=[];
       chart.data.datasets[1].data=[];
@@ -530,10 +547,53 @@
     if (error) throw error;
     if (!data) throw new Error("No active device is assigned to this account");
     currentDevice=data;
+    const { data: profile, error: profileError } = await sb.from("profiles")
+      .select("role")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+    if (profileError) throw profileError;
+    currentRole=profile?.role || "viewer";
     currentConfig={...DEFAULT_CONFIG, ...(one(data.device_configuration) || {})};
     $("deviceName").textContent = data.name || data.device_uid || "--";
     $("lastSeq").textContent = data.last_sequence_number ?? "--";
     updateConfigUI();
+    setSignedInUI(true);
+  }
+
+  async function uploadFirmware(){
+    requireDevice();
+    if (!["owner","admin"].includes(currentRole)) {
+      toast("Administrator access required");
+      return;
+    }
+    const file=$("firmwareFile").files?.[0];
+    const version=$("firmwareVersion").value.trim();
+    if (!file || !/^\d+\.\d+\.\d+$/.test(version)) {
+      toast("Choose a .bin file and enter a version such as 2.0.1");
+      return;
+    }
+    if (file.size <= 0 || file.size > 1250000) {
+      toast("Firmware must be no larger than 1,250,000 bytes");
+      return;
+    }
+    const form=new FormData();
+    form.append("firmware", file, file.name);
+    form.append("version", version);
+    form.append("device_id", currentDevice.id);
+    $("btnUploadFirmware").disabled=true;
+    $("firmwareStatus").textContent="Uploading and validating firmware...";
+    try {
+      const { data, error } = await sb.functions.invoke("firmware-upload", { body: form });
+      if (error || data?.error) throw new Error(error?.message || data.error);
+      $("firmwareStatus").textContent=`Published ${data.release.version} (${data.release.size_bytes} bytes). The device will check automatically.`;
+      $("firmwareFile").value="";
+      toast("Firmware published");
+    } catch (err) {
+      $("firmwareStatus").textContent="Firmware upload failed.";
+      toast("Firmware upload failed: " + (err.message || "unknown error"));
+    } finally {
+      $("btnUploadFirmware").disabled=false;
+    }
   }
   async function loadCounts(){
     requireDevice();
@@ -894,6 +954,7 @@
   $("btnRefresh").addEventListener("click", ()=>{ toast("Refreshing"); refreshAll(); });
   $("btnCsv").addEventListener("click", ()=> exportCSVYears(5).catch(err=>toast(err.message)));
   $("btnSaveSettings").addEventListener("click", ()=> saveSettings().catch(err=>toast(err.message)));
+  $("btnUploadFirmware").addEventListener("click", ()=> uploadFirmware().catch(err=>toast(err.message)));
   $("tabs").addEventListener("click", (e)=>{
     const b = e.target.closest("button");
     if (!b) return;
